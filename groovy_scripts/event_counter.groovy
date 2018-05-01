@@ -76,7 +76,7 @@ public class event_counter {
 		int event_counter = 0; // number of events analyzed
 		int monte_carlo_counter = 0; // number of events with reconstructed MC particles
 		int generic_counter = 0; // number of events reconstructed from generic CLAS12 fitter
-		int research_counter = 0; // number of events reconstructed with research project fitter
+		// int research_counter = 0; // number of events reconstructed with research project fitter
 		for (int current_file; current_file<n_files; current_file++) {
 			println(); println(); println("Opening file "+Integer.toString(current_file+1)
 				+" out of "+n_files);
@@ -108,8 +108,8 @@ public class event_counter {
 			round(100*monte_carlo_counter/event_counter,3)+"%)");
 		println("generic fitter reconstructed "+generic_counter+" events ("+
 			round(100*generic_counter/event_counter,3)+"%)");
-		println("research project fitter reconstructed "+research_counter+" events ("+
-			round(100*research_counter/event_counter,3)+"%)");
+		// println("research project fitter reconstructed "+research_counter+" events ("+
+		// 	round(100*research_counter/event_counter,3)+"%)");
 		println();
 	}
 }
