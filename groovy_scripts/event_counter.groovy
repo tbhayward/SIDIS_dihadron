@@ -55,14 +55,14 @@ public class event_counter {
 
 		GenericKinematicFitter mc_fitter = new monte_carlo_fitter(10.6);
 		GenericKinematicFitter generic_fitter = new generic_rec_fitter(10.6);
-		// GenericKinematicFitter research_fitter = new SIDIS_fitter(10.6);
-		EventFilter filter = new EventFilter("-211:X+:X-:Xn"); 
+		GenericKinematicFitter research_fitter = new SIDIS_fitter(10.6);
+		EventFilter filter = new EventFilter("11:X+:X-:Xn"); 
 			// all events with electron, + and - pion and any number of other particles
 
 		int event_counter = 0; // number of events analyzed
 		int monte_carlo_counter = 0; // number of events with reconstructed MC particles
 		int generic_counter = 0; // number of events reconstructed from generic CLAS12 fitter
-		// int research_counter = 0; // number of events reconstructed with research project fitter
+		int research_counter = 0; // number of events reconstructed with research project fitter
 
 		for (int current_file; current_file<n_files; current_file++) {
 		// for (int current_file; current_file<n_files; current_file++) {
@@ -77,7 +77,7 @@ public class event_counter {
 				HipoDataEvent event = reader.getNextEvent(); 
     			PhysicsEvent  mc_Event  = mc_fitter.getPhysicsEvent(event);
     			PhysicsEvent  generic_Event  = generic_fitter.getPhysicsEvent(event);
-    			// PhysicsEvent  research_Event  = research_fitter.getPhysicsEvent(event);
+    			PhysicsEvent  research_Event  = research_fitter.getPhysicsEvent(event);
 
     			if(filter.isValid(mc_Event)==true){
     				monte_carlo_counter++; // monte carlo fitter returned recon dipion event
@@ -85,9 +85,9 @@ public class event_counter {
     			if(filter.isValid(generic_Event)==true){
     				generic_counter++; // generic CLAS12 fitter returned recon dipion event
     			}
-    			// if(filter.isValid(research_Event)==true){
-    			// 	research_counter++; // research fitter returned recon dipion event
-    			// }
+    			if(filter.isValid(research_Event)==true){
+    				research_counter++; // research fitter returned recon dipion event
+    			}
 			}
 		}
 		println(); println();
@@ -96,8 +96,8 @@ public class event_counter {
 			round(100*monte_carlo_counter/event_counter,3)+"%)");
 		println("generic fitter reconstructed "+generic_counter+" events ("+
 			round(100*generic_counter/event_counter,3)+"%)");
-		// println("research project fitter reconstructed "+research_counter+" events ("+
-		// 	round(100*research_counter/event_counter,3)+"%)");
+		println("research project fitter reconstructed "+research_counter+" events ("+
+			round(100*research_counter/event_counter,3)+"%)");
 		println();
 	}
 }
