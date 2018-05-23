@@ -114,7 +114,9 @@ public class resolution {
 		double max_bin = 10.6;
 
 		// JFrame frame = new JFrame("Timothy's u-u TMDGen Results");
-		JFrame frame = new JFrame("Harut's u-t Pythia Results");
+		// JFrame frame = new JFrame("Harut's l-u Pythia Results");
+		// JFrame frame = new JFrame("Timothy's MC u-u TMDGen Results");
+		JFrame frame = new JFrame("Harut's MC l-u Pythia Results");
 		frame.setSize(900,470);
 
 		double[] bin_centers = new double[n_bins-1];
@@ -148,7 +150,7 @@ public class resolution {
     			// only interested if REC::Particle has reconstructed event
     			Particle mc_e = mc_Event.getParticle("[11]");
     			Particle rec_e = generic_Event.getParticle("[11]");
-    			histogram.fill(rec_e.e());
+    			histogram.fill(mc_e.e());
 
     			}
 			}
