@@ -109,27 +109,27 @@ public class resolution {
 		}
 
 
-		int n_bins = 175;
-		double min_bin = 0;
-		double max_bin = 10.6;
+		int n_bins = 200;
+		double min_bin = -1;
+		double max_bin = 10;
 
 		// JFrame frame = new JFrame("Timothy's u-u TMDGen Results");
 		// JFrame frame = new JFrame("Harut's l-u Pythia Results");
 		// JFrame frame = new JFrame("Timothy's MC u-u TMDGen Results");
-		JFrame frame = new JFrame("Harut's MC l-u Pythia Results");
+		JFrame frame = new JFrame("");
 		frame.setSize(900,470);
 
 		double[] bin_centers = new double[n_bins-1];
 		bin_centers = bins(n_bins, min_bin, max_bin);
 		EmbeddedCanvas canvas = new EmbeddedCanvas();	
 		H1F histogram = new H1F("",n_bins,min_bin,max_bin);
-		histogram.setTitleX("Electron Energy (GeV)");
+		histogram.setTitleX("pid #chi^2");
 		histogram.setTitleY("Counts (Normalized)");
 
 		GenericKinematicFitter mc_fitter = new monte_carlo_fitter(10.6);
-		GenericKinematicFitter generic_fitter = new generic_rec_fitter(10.6);
-		// GenericKinematicFitter research_fitter = new SIDIS_fitter(10.6);
-		EventFilter filter = new EventFilter("11:211:-211:X+:X-:Xn"); 
+		GenericKinematicFitter rec_fitter = new event_builder_fitter(10.6);
+		GenericKinematicFitter research_fitter = new enhanced_pid_fitter(10.6);
+		EventFilter filter = new EventFilter("11:X+:X-:Xn"); 
 		// all events with electron, + and - pion and any number of other particles
 
 		for (int current_file; current_file<n_files; current_file++) {
@@ -143,26 +143,53 @@ public class resolution {
 			while(reader.hasEvent()==true){ // cycle through events
 				HipoDataEvent event = reader.getNextEvent(); 
     			PhysicsEvent  mc_Event  = mc_fitter.getPhysicsEvent(event);
-    			PhysicsEvent  generic_Event  = generic_fitter.getPhysicsEvent(event);
-    			// PhysicsEvent  research_Event  = research_fitter.getPhysicsEvent(event);
+    			PhysicsEvent  rec_Event  = rec_fitter.getPhysicsEvent(event);
+    			PhysicsEvent  research_Event  = research_fitter.getPhysicsEvent(event);
 
-    			if(filter.isValid(generic_Event)==true){ 
-    			// only interested if REC::Particle has reconstructed event
-    			Particle mc_e = mc_Event.getParticle("[11]");
-    			Particle rec_e = generic_Event.getParticle("[11]");
-    			histogram.fill(mc_e.e());
+    			double beam_mass = 0.00051099894; // electron mass (GeV)
+				double target_mass = 0.93827208; // proton mass (GeV)
+				LorentzVector beam = new LorentzVector(0, 0, 
+					Math.pow(Math.pow(10.6,2)-Math.pow(beam_mass,2),0.5), 10.6); // 10.6 GeV beam
+				LorentzVector target = new LorentzVector(0, 0, 0, target_mass)
 
+    			if (filter.isValid(research_Event)) {
+    	// 			Particle electron = research_Event.getParticle("[11]");
+    	// 			Particle pipi = research_Event.getParticle("[211]+[-211]");
+
+					// double Q2 = 4*beam.e()*electron.e()*Math.pow(electron.theta()/2,2);
+					// double first_term = target.e()*target.e();
+					// double second_term = 2*target.e()*(beam.e()-electron.e());
+					// double third_term = - 4*beam.e()*electron.e()*Math.pow(Math.sin(electron.theta()/2),2);
+					// double W = Math.pow(first_term + second_term + third_term, 0.5);
+
+					// LorentzVector missing_part = new LorentzVector(pipi.px()+electron.px(), 
+    	// 				pipi.py()+electron.py(), beam.pz()-pipi.pz()-electron.pz(), 
+    	// 				beam.e()+target.e()-pipi.e()-electron.e());
+    	// 			double missing_mass = Math.pow(Math.pow(missing_part.e(),2)-
+    	// 				Math.pow(missing_part.p(),2),0.5);
+    				HipoDataBank recBank= (HipoDataBank) event.getBank("REC::Particle");
+    				for (int i=0; i<recBank.rows(); i++){
+    					int pid = recBank.getInt("pid", i);
+    					if (pid==11) {
+    						float chi2pid = recBank.getFloat("chi2pid", i);
+    						histogram.fill(chi2pid);
+    					}
+    				}
     			}
 			}
 		}
 
 		histogram.unit();
 		// draw the histogram
+		canvas.setAxisLabelSize(14);
+		canvas.setStatBoxFontSize(14);
+		canvas.setAxisTitleSize(18);
+		canvas.setTitleSize(18);
 		canvas.draw(histogram);
 		frame.add(canvas);
 		frame.setLocationRelativeTo(null);
 		frame.setVisible(true);
 		canvas.setStatBoxFontSize(18);
-		histogram.setOptStat(1111);
+		histogram.setOptStat(10000);
     }
 }

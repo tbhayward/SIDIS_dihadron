@@ -38,6 +38,23 @@ public class resolution {
 		return bin_centers;
 	}
 
+	public static double[] histogram_values(int n_bins, H1F histogram) {
+		double[] histogram_values = new double[n_bins-1];
+		for (int i=0; i<n_bins-1; i++) {
+			histogram_values[i] = histogram.getBinContent(i);
+		}
+
+		return histogram_values;
+	}
+
+	public static int normalization_constant(int n_bins, H1F histogram) {
+		int runSum=0;
+		for (int i=0; i<n_bins-1; i++) {
+			runSum+=histogram.getBinContent(i);
+		}
+		return runSum;
+	}
+
 	public static F1D fit_function(int n_bins, double min_bin, double max_bin, H1F histogram,
 		double mu, double sigma) {
 
@@ -109,9 +126,9 @@ public class resolution {
 		}
 
 
-		int n_bins = 200;
-		double min_bin = -0.2;
-		double max_bin = 0.2;
+		int n_bins = 125;
+		double min_bin = -0.05;
+		double max_bin = 0.05;
 
 		JFrame frame = new JFrame("some frame here");
 		frame.setSize(900,470);
@@ -119,9 +136,9 @@ public class resolution {
 		double[] bin_centers = new double[n_bins-1];
 		bin_centers = bins(n_bins, min_bin, max_bin);
 		EmbeddedCanvas canvas = new EmbeddedCanvas();	
-		H1F histogram = new H1F("Resolution",n_bins,min_bin,max_bin);
-		histogram.setTitleX("MC Electron Energy - REC Electron Energy (Gev)");
-		histogram.setTitleY("Counts (Normalized)");
+		H1F histogram = new H1F("",n_bins,min_bin,max_bin);
+		// histogram.setTitleX("MC -pi Energy - REC -pi Energy (Gev)");
+		// histogram.setTitleY("Counts (Normalized)");
 
 		GenericKinematicFitter mc_fitter = new monte_carlo_fitter(10.6);
 		GenericKinematicFitter generic_fitter = new generic_rec_fitter(10.6);
@@ -145,15 +162,38 @@ public class resolution {
 
     			if(filter.isValid(generic_Event)==true){ 
     			// only interested if REC::Particle has reconstructed event
-    			Particle mc_e = mc_Event.getParticle("[11]");
-    			Particle rec_e = generic_Event.getParticle("[11]");
-    			histogram.fill(mc_e.e()-rec_e.e());
+    			// Particle mc_H = mc_Event.getParticle("[211]+[-211]");
+    			// Particle rec_H = generic_Event.getParticle("[211]+[-211]");
+    			// Particle mc_e = mc_Event.getParticle("[11]");
+    			// Particle rec_e = generic_Event.getParticle("[11]");
+    			// double mc_value = mc_H.e()/(10.6-mc_e.e());
+    			// double rec_value = rec_H.e()/(10.6-rec_e.e());
+    			// histogram.fill(mc_value-rec_value);
 
+    			Particle rec_H = generic_Event.getParticle("[211]+[-211]");
+    			Particle rec_e = generic_Event.getParticle("[11]");
+    			double rec_Q2 = 4*10.6*rec_e.e()*Math.pow(rec_e.theta()/2,2);
+    			double rec_nu = 10.6 - rec_e.e();
+    			double rec_y = rec_nu/10.6;
+    			double rec_gamma = Math.pow(rec_Q2,0.5)/rec_nu;
+    			double rec_sinThetay = rec_gamma * Math.pow((1-rec_y+0.25*rec_y*rec_y*
+    				rec_gamma*rec_gamma)/(1+rec_gamma*rec_gamma),0.5);
+
+    			Particle mc_H = mc_Event.getParticle("[211]+[-211]");
+    			Particle mc_e = mc_Event.getParticle("[11]");
+    			double mc_Q2 = 4*10.6*mc_e.e()*Math.pow(mc_e.theta()/2,2);
+    			double mc_nu = 10.6 - mc_e.e();
+    			double mc_y = mc_nu/10.6;
+    			double mc_gamma = Math.pow(mc_Q2,0.5)/mc_nu;
+    			double mc_sinThetay = mc_gamma * Math.pow((1-mc_y+0.25*mc_y*mc_y*
+    				mc_gamma*mc_gamma)/(1+mc_gamma*mc_gamma),0.5);
+
+    			histogram.fill(mc_H.p()*mc_sinThetay-rec_H.p()*rec_sinThetay);
     			}
 			}
 		}
 
-		histogram.unit();
+		// histogram.unit();
 		double mu = bin_centers[histogram.getMaximumBin()];
 		int half_height_index = 0;
 		double half_height_test = 0;
@@ -162,20 +202,38 @@ public class resolution {
 			half_height_index++;
 		}
 		double sigma = mu-bin_centers[half_height_index];
-		// println(mu+" +/- "+sigma);
 
 		F1D func = fit_function(n_bins, min_bin, max_bin, histogram, mu, sigma);
 		// draw the histogram
-		canvas.draw(histogram);
+		// canvas.draw(histogram);
+
+		double[] values = histogram_values(n_bins, histogram);
+		int runSum = normalization_constant(n_bins, histogram);
+		// func.setParameter(0, 1/runSum);
+		GraphErrors points = new GraphErrors();
+		for (int i=0; i<n_bins-1; i++) {
+			points.addPoint(bin_centers[i], values[i]/runSum, 0, Math.pow(runSum,-1)*
+				Math.pow(values[i],0.5));
+		}
+
+		// points.setMarkerColor(2);
+		// points.setLineColor(2);
+		points.setMarkerStyle(0);
+		points.setMarkerSize(4);
+		points.setLineThickness(2);
+
+		points.setTitleX("Ph_perp Resolution");
+		points.setTitleY("Normalized Counts");
+		canvas.getPad(0).setTitle("Hadron Pair Fractional Virtual Photon Energy Resolution");
+		canvas.setTitleSize(38);
+		canvas.setAxisTitleSize(26);
+		canvas.setAxisLabelSize(22);
+		canvas.setStatBoxFontSize(18);
+		canvas.draw(points);
+
+
 		frame.add(canvas);
 		frame.setLocationRelativeTo(null);
 		frame.setVisible(true);
-		canvas.setStatBoxFontSize(18);
-		histogram.setOptStat(10);
-		func.show();
-		func.setLineColor(2); func.setLineWidth(5); func.setLineStyle(0);
-		canvas.draw(func,"same");
-		func.setOptStat(1110);
-		println("Fit has chi2dof = "+(func.getChiSquare()/(n_bins-1)));
     }
 }

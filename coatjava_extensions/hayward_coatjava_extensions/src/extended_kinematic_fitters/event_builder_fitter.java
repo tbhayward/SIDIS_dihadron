@@ -11,11 +11,11 @@ import org.jlab.clas.physics.PhysicsEvent;
 import org.jlab.io.base.DataEvent;
 import org.jlab.io.hipo.HipoDataBank;
 
-public class generic_rec_fitter extends GenericKinematicFitter {
+public class event_builder_fitter extends GenericKinematicFitter {
 
     protected final Double mybeam;
 
-    public generic_rec_fitter(double beam) {
+    public event_builder_fitter(double beam) {
         super(beam);
         mybeam = beam;
     } 
