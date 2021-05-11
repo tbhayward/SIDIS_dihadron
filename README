@@ -14,3 +14,17 @@ In use with the current "back-to-back" proton-pi+ analysis.
 Code relies on the CLAS12 quality assurance (QA) repository maintained by Christopher Dilks: https://github.com/JeffersonLab/clasqaDB
 if desired, you can comment out that line in the processing.groovy script but any final analysis should likely be using the QA.
 
+
+included scripts: 
+
+I. processing.groovy
+  I prefer to process the clas12 hipo4 files and create text outputs that I can then import into Mathematica, root, etc.
+  It's not the most efficient but it is nicely universal. This script accepts 5 input arguments:
+    1. hipo file directory 
+      a directory such as, /cache/clas12/rg-a/production/recon/fall2018/torus-1/pass1/v0/dst/train/skim4/, that contains hipo4 data files.
+    2. pid for p1 (momentum 1), i.e. 211 for pi+
+    3. pid for p2 (momentum 2), i.e. -211 for pi-
+    4. output text file name
+    5. number of files to process in the directory
+    
+II. 
