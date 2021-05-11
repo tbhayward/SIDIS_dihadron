@@ -15,9 +15,23 @@ Code relies on the CLAS12 quality assurance (QA) repository maintained by Christ
 if desired, you can comment out that line in the processing.groovy script but any final analysis should likely be using the QA.
 
 
-included scripts: 
-
-I. processing.groovy
+included files: 
+  
+I. analysis_fitter.java
+  This is the class for the kinematic fitter I use to build events. 
+  The idea is to take the CLAS12 EventBuilder as a basis and enhance the PID on top of that.
+  Loops through all particles in REC::Particle bank and sees if they pass the enhanced particle PID cuts described in my thesis.
+  Start reading around line 500, "public PhysicsEvent getPhysicsEvent(DataEvent event) {"
+  
+II. dihadrons.java
+  This is the class that I use to actually calculate all of the relevant kinematic variables such as Q2, W, Mx, xF, pT, etc.
+  Takes events from the events produced by analysis_fitter.java and a given p1 and p2 particle identification number. 
+  See the processing.groovy scripts to see how to access these variables.
+  
+III. hayward_coatjava_extensions.jar
+  The distribution version of all my classes if you want to just try running the code as is first.
+  
+IV. processing.groovy
   I prefer to process the clas12 hipo4 files and create text outputs that I can then import into Mathematica, root, etc.
   It's not the most efficient but it is nicely universal. This script accepts 5 input arguments:
     1. hipo file directory 
@@ -27,7 +41,7 @@ I. processing.groovy
     4. output text file name
     5. number of files to process in the directory
     
-II. processing_mc.groovy
+V. processing_mc.groovy
   Same as above; outputs a text file with event-by-event information. Designed to be used with MC files instead however.
   Puts, for example, Q2 and mc_Q2 next to each other for comparison. 
   
