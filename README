@@ -8,6 +8,5 @@ Description of the java code used by Timothy Hayward for the RGA first experimen
 Thesis: https://www.jlab.org/Hall-B/general/thesis/THayward_thesis.pdf
 Letter: https://arxiv.org/abs/2101.04842
 
-Updated now to include more generlized final states (changed from pi+ pi- assumed to user input for p1 and p2). In use with the current 
-"back-to-back" proton-pi+ analysis.
+Updated now to include more generlized final states (changed from pi+ pi- assumed to user input for p1 and p2). In use with the current "back-to-back" proton-pi+ analysis.
 
