@@ -1,40 +1,13 @@
 /**
-** RECONSTRUCTION CHAIN INSTRUCTIONS
+** Timothy B. Hayward, updated May 11, 2021
+** analysis codes for dihadron analysis
 **/
 
 
-# $ is command line input
+Description of the java code used by Timothy Hayward for the RGA first experiment dihadron analysis.
+Thesis: https://www.jlab.org/Hall-B/general/thesis/THayward_thesis.pdf
+Letter: https://arxiv.org/abs/2101.04842
 
-!Generator!
-TMDGen (/u/home/thayward/TMDGen or elsewhere)
-Instruction files are placed in TMDGen/Examples/ 
-TMDGen Syntax: $TMDGen/bin/TMDGen <instruction_file> <number_of_events>
-
-!Conversion to LUND!
-root macro located in /volatile/clas12/thayward/SIDIS/dihadron/TMDGen_output/rootToLund.cxx
-Load into a root session, execute macro via
-$.x rootToLund.cxx(<input root file>, <output LUND file>)
-Generally output files to /volatile/clas12/thayward/SIDIS/dihadron/LUND_files/
-Root currently is set to boost from COM to Lab frame
-
-!gemc!
-gemc instruction file located at 
-/volatile/clas12/thayward/SIDIS/dihadron/instruction_files/gemc_instructions/gemc_4a.2.3/gemc_instructions
-(version number may be updated from 4a.2.3 in the future)
-Executive via $jsub /volatile/clas12/thayward/SIDIS/dihadron/instruction_files/gemc_instructions/gemc_4a.2.3/gemc_instructions
-
-!convert to hipo!
-$coatjava/bin/evio2hipo -r 11 -t -1.0 -s 1.0 -o output_file_name.hipo output1.evio output2.evio output3.evio [...]
-(I have coatjava stored in myClara plugins)
-
-!clara reconstruction!
-clara instruction files located at
-/volatile/clas12/thayward/SIDIS/instruction_files/myClara_instructions
-They are a list_of_files.txt which is a list of input hipo files and myClara.config, with settings like
-input and output directory, session name, etc.
-$CLARA_HOME/bin/clara-shell 
-$source myClara.config
-$run farm
-
-
+Updated now to include more generlized final states (changed from pi+ pi- assumed to user input for p1 and p2). In use with the current 
+"back-to-back" proton-pi+ analysis.
 
