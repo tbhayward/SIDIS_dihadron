@@ -27,4 +27,8 @@ I. processing.groovy
     4. output text file name
     5. number of files to process in the directory
     
-II. 
+II. processing_mc.groovy
+  Same as above; outputs a text file with event-by-event information. Designed to be used with MC files instead however.
+  Puts, for example, Q2 and mc_Q2 next to each other for comparison. 
+  
+  
