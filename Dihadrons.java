@@ -54,10 +54,11 @@ public class Dihadrons {
     protected double Depolarization_V;
     protected double Depolarization_W;
     
-    protected double e_px, e_py, e_pz, e_p, e_e, e_theta; // electron kinematics
+    protected double e_px, e_py, e_pz, e_p, e_e, e_theta, e_phi; // electron kinematics
     protected double p_px, p_py, p_pz, p_p, p_e; // dihadron kinematics, mass is Mh
-    protected double p1_px, p1_py, p1_pz, p1_p, p1_e, p1_theta; // p1 kinematics
-    protected double p2_px, p2_py, p2_pz, p2_p, p2_e, p2_theta; // p2 kinematics
+    protected double p1_px, p1_py, p1_pz, p1_p, p1_e, p1_theta, p1_phi; // p1 kinematics
+    protected double p2_px, p2_py, p2_pz, p2_p, p2_e, p2_theta, p2_phi; // p2 kinematics
+    protected double vz_e, vz_p1, vz_p2;
     
     protected double p_Breit_pz, p1_Breit_pz, p2_Breit_pz, p_gN_pz, p1_gN_pz, p2_gN_pz;
     
@@ -115,6 +116,7 @@ public class Dihadrons {
         // kinematics of electron
         e_px = lv_e.px(); e_py = lv_e.py(); e_pz = lv_e.pz(); e_p = lv_e.p(); e_e = lv_e.e(); 
         e_theta = scattered_electron.theta();
+        e_phi = scattered_electron.phi();
                 
         // DIS variables
         LorentzVector lv_q = new LorentzVector(lv_beam); lv_q.sub(lv_e);
@@ -159,6 +161,10 @@ public class Dihadrons {
         Particle dihadron = recEvent.getParticle(combined_index_string);
         Mh = dihadron.mass();
         
+        vz_e = scattered_electron.vz();
+        vz_p1 = p1.vz();
+        vz_p2 = p2.vz();
+        
         LorentzVector lv_p = new LorentzVector();
         lv_p.setPxPyPzM(dihadron.px(), dihadron.py(), dihadron.pz(), dihadron.mass());
         LorentzVector lv_p1 = new LorentzVector();
@@ -169,8 +175,10 @@ public class Dihadrons {
         // kinematics of hadrons
         p1_px = lv_p1.px(); p1_py = lv_p1.py(); p1_pz = lv_p1.pz(); p1_p = lv_p1.p(); p1_e = p1.e(); 
         p1_theta = p1.theta();
+        p1_phi = p1.phi();
         p2_px = lv_p2.px(); p2_py = lv_p2.py(); p2_pz = lv_p2.pz(); p2_p = lv_p2.p(); p2_e = p2.e();
         p2_theta = p2.theta();
+        p2_phi = p2.phi();
         p_px = lv_p.px(); p_py = lv_p.py(); p_pz = lv_p.pz(); p_p = lv_p.p(); p_e = lv_p.e();
         
         z = lv_p.e()/lv_q.e();
@@ -460,6 +468,9 @@ public class Dihadrons {
     public double e_theta() { return Double.valueOf(Math.round((180/Math.PI)*e_theta*100000))/100000; } // returns electron lab 
     // frame polar angle
     
+    public double e_phi() { return Double.valueOf(Math.round((180/Math.PI)*e_phi*100000))/100000; } // returns electron lab 
+    // frame polar angle
+    
     public double p_px() { return Double.valueOf(Math.round(p_px*100000))/100000; }// returns dihadron lab frame px
     
     public double p_py() { return Double.valueOf(Math.round(p_py*100000))/100000; }// returns dihadron lab frame py
@@ -483,6 +494,9 @@ public class Dihadrons {
     public double p1_theta() { return Double.valueOf(Math.round((180/Math.PI)*p1_theta*100000))/100000; } // returns p1 lab 
     // frame polar angle
     
+    public double p1_phi() { return Double.valueOf(Math.round((180/Math.PI)*p1_phi*100000))/100000; } // returns p1 lab 
+    // frame polar angle
+    
     public double p2_px() { return Double.valueOf(Math.round(p2_px*100000))/100000; }// returns hadron 2 lab frame px
     
     public double p2_py() { return Double.valueOf(Math.round(p2_py*100000))/100000; }// returns hadron 2 lab frame py
@@ -494,6 +508,15 @@ public class Dihadrons {
     public double p2_e() { return Double.valueOf(Math.round(p2_e*100000))/100000; }// returns hadron 2 lab frame energy
     
     public double p2_theta() { return Double.valueOf(Math.round((180/Math.PI)*p2_theta*100000))/100000; } // returns p2 lab frame polar angle
+    
+    public double p2_phi() { return Double.valueOf(Math.round((180/Math.PI)*p2_phi*100000))/100000; } // returns p2 lab frame polar angle
+    
+    public double vz_e() { return Double.valueOf(Math.round(vz_e*100000))/100000; }// returns electron z vertex
+    
+    public double vz_p1() { return Double.valueOf(Math.round(vz_p1*100000))/100000; }// returns electron z vertex
+    
+    public double vz_p2() { return Double.valueOf(Math.round(vz_p2*100000))/100000; }// returns electron z vertex
+   
     
     
     private static double particle_mass (int pid) {
