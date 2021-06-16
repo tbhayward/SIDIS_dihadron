@@ -17,7 +17,7 @@ import org.jlab.io.hipo.HipoDataBank;
 import org.jlab.clas.physics.*;
 
 
-public class Dihadrons {
+public class Hadron {
     
     protected byte helicity;
     protected int runnum;
@@ -29,20 +29,16 @@ public class Dihadrons {
     // labels are unnumbered if they refer to the dihadron (perhaps a meson) and numbered for individual
     // hadrons. Convention is ordered by mass, then charge. For example in pi+pi- pi+ is hadron 1
     // in proton+pi+ the proton is p1, in k+pi- the kaon is p1.
-    protected double Q2, W, gamma, nu, x, y, z, z1, z2;
-    protected double Mx, Mx1, Mx2, Mx3; // Mx is the Mx(ep1p2), Mx1 is Mx(ep1), Mx2 is Mx(ep2), Mx3 is Mx(e)
-    protected double Mh, pT, pT1, pT2, xF, xF1, xF2, zeta;
-    protected double eta, eta1, eta2, eta_gN, eta1_gN, eta2_gN;
+    protected double Q2, W, gamma, nu, x, y, z;
+    protected double Mx; 
+    protected double Mh, pT, xF, zeta;
+    protected double eta, eta_gN;
     // eta is the rapidity, preferred by theorists in the Breit frame (e.g. eta1 is in Breit) 
     // eta_gN is the rapidity in the gamma*-nucleon COM frame
     // the difference between two rapidities is Lorentz invariant, i.e.
     // eta1-eta2 = eta1_COM - eta2_COM
 
-    // theta is defined as the angle between the hadron p1 in the pair center-of-mass frame 
-    // and the direction of the pair, Ph, in the photon-target rest frame.
-    // phih and phiR are defined from the vectors Ph = p1+p2 and 2R = p1-p2, see 
-    // hep-ex:2101.04842
-    protected double theta, phih, phiR, phi1, phi2, Delta_phi;
+    protected double phi;
     
     // depolarization vectors defining the polarization lost during the transfer from beam to 
     // the virtual photon. 
@@ -55,25 +51,24 @@ public class Dihadrons {
     protected double Depolarization_W;
     
     protected double e_px, e_py, e_pz, e_p, e_e, e_theta, e_phi; // electron kinematics
-    protected double p_px, p_py, p_pz, p_p, p_e; // dihadron kinematics, mass is Mh
-    protected double p1_px, p1_py, p1_pz, p1_p, p1_e, p1_theta, p1_phi; // p1 kinematics
-    protected double p2_px, p2_py, p2_pz, p2_p, p2_e, p2_theta, p2_phi; // p2 kinematics
-    protected double vz_e, vz_p1, vz_p2;
+    protected double p_px, p_py, p_pz, p_p, p_e, p_theta, p_phi; // dihadron kinematics, mass is Mh
+    protected double vz_e, vz_p;
     
-    protected double p_Breit_pz, p1_Breit_pz, p2_Breit_pz, p_gN_pz, p1_gN_pz, p2_gN_pz;
+    protected double p_Breit_pz, p_gN_pz;
     
-    public static boolean channel_test(Dihadrons variables) {
+    public static boolean channel_test(Hadron variables) {
 //        if (variables.helicity==0){ 
 //            System.out.println("You're returning false because helicity = 0. Is this data or MC?");
 //            return false; }
         if (variables.Q2()<1) { return false; } 
         if (variables.W()<2) { return false; } 
+//        else if (variables.xF1()<0.0 || variables.xF2()<0.0) { return false; } 
         else if (variables.y()>0.80) { return false; } 
         else if (variables.Mx()<0.0) { return false; } 
 	return true;
     }
     
-    public Dihadrons(DataEvent event, PhysicsEvent recEvent, int p1PID, int p1Index, int p2PID, int p2Index) {
+    public Hadron(DataEvent event, PhysicsEvent recEvent, int pPID, int pIndex) {
         // provide the PDG PID of the two hadrons
         
         // load banks
@@ -126,10 +121,6 @@ public class Dihadrons {
 	y = nu/lv_beam.e();
         gamma = 2*particle_mass(2212)*x/Math.pow(Q2, 0.5);
         
-        // calculate the Mx3, the missing mass of just Mx(e)
-        LorentzVector lv_Mx3 = new LorentzVector(lv_q); lv_Mx3.add(lv_target); 
-        Mx3 = lv_Mx3.mass();
-        
         // Depolarization variables
         Depolarization_A = 1/(1+gamma*gamma)*(1-y+y*y/2+y*y*gamma*gamma/4);
         Depolarization_B = 1/(1+gamma*gamma)*(1-y-y*y*gamma*gamma/4);
@@ -152,50 +143,28 @@ public class Dihadrons {
         BreitBoost.negative();
         
         // set up hadrons and dihadron
-        String p1Index_string = "["+p1PID+","+p1Index+"]";
-        Particle p1 = recEvent.getParticle(p1Index_string);
-        String p2Index_string = "["+p2PID+","+p2Index+"]";
-        Particle p2 = recEvent.getParticle(p2Index_string);
-        String combined_index_string = "["+p1PID+","+p1Index+"]+["+p2PID+","+p2Index+"]";
-        Particle dihadron = recEvent.getParticle(combined_index_string);
-        Mh = dihadron.mass();
+        String pIndex_string = "["+pPID+","+pIndex+"]";
+        Particle hadron = recEvent.getParticle(pIndex_string);
         
         vz_e = scattered_electron.vz();
-        vz_p1 = p1.vz();
-        vz_p2 = p2.vz();
+        vz_p = hadron.vz();
         
         LorentzVector lv_p = new LorentzVector();
-        lv_p.setPxPyPzM(dihadron.px(), dihadron.py(), dihadron.pz(), dihadron.mass());
-        LorentzVector lv_p1 = new LorentzVector();
-        lv_p1.setPxPyPzM(p1.px(), p1.py(), p1.pz(), p1.mass());
-        LorentzVector lv_p2 = new LorentzVector();
-        lv_p2.setPxPyPzM(p2.px(), p2.py(), p2.pz(), p2.mass());
+        lv_p.setPxPyPzM(hadron.px(), hadron.py(), hadron.pz(), hadron.mass());
         
         // kinematics of hadrons
-        p1_px = lv_p1.px(); p1_py = lv_p1.py(); p1_pz = lv_p1.pz(); p1_p = lv_p1.p(); p1_e = p1.e(); 
-        p1_theta = p1.theta();
-        p1_phi = p1.phi();
-        p2_px = lv_p2.px(); p2_py = lv_p2.py(); p2_pz = lv_p2.pz(); p2_p = lv_p2.p(); p2_e = p2.e();
-        p2_theta = p2.theta();
-        p2_phi = p2.phi();
-        p_px = lv_p.px(); p_py = lv_p.py(); p_pz = lv_p.pz(); p_p = lv_p.p(); p_e = lv_p.e();
-        
+        p_px = lv_p.px(); p_py = lv_p.py(); p_pz = lv_p.pz(); p_p = lv_p.p(); p_e = hadron.e(); 
+        p_theta = hadron.theta();
+        p_phi = hadron.phi();
+    
         z = lv_p.e()/lv_q.e();
-        z1 = lv_p1.e()/lv_q.e();
-	z2 = lv_p2.e()/lv_q.e();
         
         // missing mass calculations
-        LorentzVector lv_Mx = new LorentzVector(lv_q); lv_Mx.add(lv_target); lv_Mx.sub(lv_p1); lv_Mx.sub(lv_p2);
+        LorentzVector lv_Mx = new LorentzVector(lv_q); lv_Mx.add(lv_target); lv_Mx.sub(lv_p); 
         Mx = lv_Mx.mass();
-        LorentzVector lv_Mx1 = new LorentzVector(lv_q); lv_Mx1.add(lv_target); lv_Mx1.sub(lv_p1); 
-        Mx1 = lv_Mx1.mass();
-        LorentzVector lv_Mx2 = new LorentzVector(lv_q); lv_Mx2.add(lv_target); lv_Mx2.sub(lv_p2);
-        Mx2 = lv_Mx2.mass();
         
         // boost to gamma*-nucleon center of mass frame
         LorentzVector lv_p_gN = new LorentzVector(lv_p); lv_p_gN.boost(gNBoost);
-        LorentzVector lv_p1_gN = new LorentzVector(lv_p1); lv_p1_gN.boost(gNBoost);
-        LorentzVector lv_p2_gN = new LorentzVector(lv_p2); lv_p2_gN.boost(gNBoost);
         LorentzVector lv_e_gN = new LorentzVector(lv_e); lv_e_gN.boost(gNBoost);
         LorentzVector lv_target_gN = new LorentzVector(lv_target); lv_target_gN.boost(gNBoost);
         Vector3 lv_e_gN_unit = new Vector3();
@@ -210,8 +179,6 @@ public class Dihadrons {
         
         // boost to Breit infinite momentum frame
         LorentzVector lv_p_Breit = new LorentzVector(lv_p); lv_p_Breit.boost(BreitBoost);
-        LorentzVector lv_p1_Breit = new LorentzVector(lv_p1); lv_p1_Breit.boost(BreitBoost);
-        LorentzVector lv_p2_Breit = new LorentzVector(lv_p2); lv_p2_Breit.boost(BreitBoost);
         LorentzVector lv_e_Breit = new LorentzVector(lv_e); lv_e_Breit.boost(BreitBoost);
         Vector3 lv_e_Breit_unit = new Vector3();
         lv_e_Breit_unit.setMagThetaPhi(1, lv_e_Breit.theta(), lv_e_Breit.phi());
@@ -220,112 +187,79 @@ public class Dihadrons {
         lv_q_Breit_unit.setMagThetaPhi(1, lv_q_Breit.theta(), lv_q_Breit.phi());
         // note that in the Breit frame +z is antialigned to the direction of q
   
-        // set up boost to dihadron rest frame (p1 and p2 center of mass frame)
-        // just used to calculate theta
-        Vector3 pCOMBoost = lv_p.boostVector(); pCOMBoost.negative();
-        LorentzVector lv_p_COM = new LorentzVector(lv_p); lv_p_COM.boost(pCOMBoost);
-        LorentzVector lv_p1_COM = new LorentzVector(lv_p1); lv_p1_COM.boost(pCOMBoost);
-        LorentzVector lv_p2_COM = new LorentzVector(lv_p2); lv_p2_COM.boost(pCOMBoost);
-//        theta = Math.acos(lv_p1_COM.vect().dot(lv_p_gN.vect()) / 
-//                (lv_p1_COM.vect().mag()*lv_p_gN.vect().mag()));
-        theta = Math.acos(lv_p1_COM.vect().dot(lv_p.vect()) / 
-                (lv_p1_COM.vect().mag()*lv_p.vect().mag()));
-        // this should be cross checked... old code had dihadron in lab frame I think
-        // should be p1 in dihadron rest frame and p in gamma*-nucleon frame
         
         pT = lv_q_gN_unit.cross(lv_p_gN.vect()).mag();
-        pT1 = lv_q_gN_unit.cross(lv_p1_gN.vect()).mag();
-        pT2 = lv_q_gN_unit.cross(lv_p2_gN.vect()).mag();
     
         xF =  2*(lv_p_gN.vect() .dot(lv_q_gN.vect())) /(lv_q_gN.vect().mag()*W);
-        xF1 = 2*(lv_p1_gN.vect().dot(lv_q_gN.vect())) /(lv_q_gN.vect().mag()*W);
-        xF2 = 2*(lv_p2_gN.vect().dot(lv_q_gN.vect())) /(lv_q_gN.vect().mag()*W);
         
-        System.out.println(lv_e_gN.e()+" "+lv_target_gN.e()+" "+lv_p1_gN.vect().mag());
-        zeta = lv_p1_gN.e()/lv_target_gN.e(); // only really applicable when p1 is a proton
+        System.out.println(lv_e_gN.e()+" "+lv_target_gN.e()+" "+lv_p_gN.vect().mag());
+        zeta = lv_p_gN.e()/lv_target_gN.e(); // only really applicable when p1 is a proton
     
         p_gN_pz = lv_p_gN.vect().dot(lv_q_gN.vect())/lv_q_gN.vect().mag();
-        p1_gN_pz = lv_p1_gN.vect().dot(lv_q_gN.vect())/lv_q_gN.vect().mag();
-        p2_gN_pz = lv_p2_gN.vect().dot(lv_q_gN.vect())/lv_q_gN.vect().mag();
         p_Breit_pz = lv_p_Breit.vect().dot(lv_q_Breit.vect())/lv_q_Breit.vect().mag();
-        p1_Breit_pz = lv_p1_Breit.vect().dot(lv_q_Breit.vect())/lv_q_Breit.vect().mag();
-        p2_Breit_pz = lv_p2_Breit.vect().dot(lv_q_Breit.vect())/lv_q_Breit.vect().mag();
         
         // Breit frame rapidity
         eta = -0.5*Math.log((lv_p_Breit.e()+p_Breit_pz) /  (lv_p_Breit.e()-p_Breit_pz));
-        eta1 = -0.5*Math.log((lv_p1_Breit.e()+p1_Breit_pz) /  (lv_p1_Breit.e()-p1_Breit_pz));
-        eta2 = -0.5*Math.log((lv_p2_Breit.e()+p2_Breit_pz) /   (lv_p2_Breit.e()-p2_Breit_pz));
         
         // gamma*-nucleon frame rapidity
         eta_gN = 0.5*Math.log((lv_p_gN.e()+p_gN_pz) / (lv_p_gN.e()-p_gN_pz));
-        eta1_gN = 0.5*Math.log((lv_p1_gN.e()+p1_gN_pz) /  (lv_p1_gN.e()-p1_gN_pz));
-        eta2_gN = 0.5*Math.log((lv_p2_gN.e()+p2_gN_pz) /  (lv_p2_gN.e()-p2_gN_pz));
         
         Vector3 vecH = new Vector3();
-        vecH.setMagThetaPhi(lv_p2_gN.vect().mag()/z2, lv_p2_gN.vect().theta(), lv_p2_gN.vect().phi());
-        Vector3 vecR = new Vector3(lv_p1_gN.vect()); // not R yet
-        vecR.setMagThetaPhi(lv_p1_gN.vect().mag()/z1, lv_p1_gN.vect().theta(), lv_p1_gN.vect().phi());
-        vecR.sub(vecH); // this is really R now that the subtraction is done
-        
-	Vector3 vectRt = new Vector3();
+        vecH.setMagThetaPhi(lv_p_gN.vect().mag()/z, lv_p_gN.vect().theta(), lv_p_gN.vect().phi());
+        Vector3 vecR = new Vector3(vecH); // not R yet
+//        vecR.setMagThetaPhi(lv_p1_gN.vect().mag()/z1, lv_p1_gN.vect().theta(), lv_p1_gN.vect().phi());
+//        vecR.sub(vecH); // this is really R now that the subtraction is done
+        vecR.negative();
+
 	Vector3 R_Q = new Vector3();
 							
 	R_Q.setMagThetaPhi(vecR.dot(lv_q_gN_unit), lv_q_gN_unit.theta(), lv_q_gN_unit.phi());
-	vectRt=vecR;
-	vectRt.sub(R_Q);
 
 	Vector3 vectPh = new Vector3(lv_p_gN.vect());
-        Vector3 vectPh1 = new Vector3(lv_p1_gN.vect());
-        Vector3 vectPh2 = new Vector3(lv_p2_gN.vect());
 	Vector3 Pt_Q = new Vector3();
 	Pt_Q.setMagThetaPhi(vecR.dot(lv_q_gN_unit), lv_q_gN_unit.theta(), lv_q_gN_unit.phi());
 	Vector3 vectPhT = new Vector3(vectPh);
 	vectPhT.sub(Pt_Q);
-        Vector3 vectPhT1 = new Vector3(vectPh1);
-	vectPhT1.sub(Pt_Q);
-        Vector3 vectPhT2 = new Vector3(vectPh2);
-	vectPhT2.sub(Pt_Q);
         
-        Vector3 vT = new Vector3(lv_q_gN_unit.cross(lv_e_gN_unit)); vT.unit();
-	Vector3 vTR = new Vector3(lv_q_gN_unit.cross(vectRt)); vTR.unit();
-	Vector3 vTH = new Vector3(lv_q_gN_unit.cross(vectPhT)); vTH.unit();
-        Vector3 vTH1 = new Vector3(lv_q_gN_unit.cross(vectPhT1)); vTH1.unit();
-        Vector3 vTH2 = new Vector3(lv_q_gN_unit.cross(vectPhT2)); vTH2.unit();
+        Vector3 vT = new Vector3(lv_q_gN_unit.cross(lv_e_gN_unit)); 
+        vT.unit();
+	Vector3 vTH = new Vector3(lv_q_gN_unit.cross(vectPhT)); 
+        vTH.unit();
         
-        double cosPhiR = vT.dot(vTR);
-	double sinPhiR = lv_e_gN.vect().cross(vectRt).dot(lv_q_gN_unit);
 	double cosPhiH = vT.dot(vTH);
 	double sinPhiH = lv_e_gN.vect().cross(vectPhT).dot(lv_q_gN_unit);
-        double cosPhiH1 = vT.dot(vTH1);
-	double sinPhiH1 = lv_e_gN.vect().cross(vectPhT1).dot(lv_q_gN_unit);
-        double cosPhiH2 = vT.dot(vTH2);
-	double sinPhiH2 = lv_e_gN.vect().cross(vectPhT2).dot(lv_q_gN_unit);
 
         // scaling
-	double rScale = lv_q_gN_unit.cross(lv_e_gN.vect()).mag()*lv_q_gN_unit.cross(vectRt).mag();
-	sinPhiR = sinPhiR/rScale;
 	double hScale = lv_q_gN_unit.cross(lv_e_gN.vect()).mag()*lv_q_gN_unit.cross(vectPh).mag();
 	sinPhiH = sinPhiH/hScale;
-        double h1Scale = lv_q_gN_unit.cross(lv_e_gN.vect()).mag()*lv_q_gN_unit.cross(vectPh1).mag();
-	sinPhiH1 = sinPhiH1/h1Scale;
-        double h2Scale = lv_q_gN_unit.cross(lv_e_gN.vect()).mag()*lv_q_gN_unit.cross(vectPh2).mag();
-	sinPhiH2 = sinPhiH2/h2Scale;
         
-        phih = Math.acos(cosPhiH); 
-        phi1 = Math.acos(cosPhiH1); 
-        phi2 = Math.acos(cosPhiH2);
-	phiR = Math.acos(cosPhiR); 
+        phi = Math.acos(cosPhiH); 
         
-        if (sinPhiR < 0.0) {  phiR = 2*Math.PI - phiR; }
-	if (sinPhiH < 0.0) { phih = 2*Math.PI - phih; }
-        if (sinPhiH1 < 0.0) { phi1 = 2*Math.PI - phi1; }
-        if (sinPhiH2 < 0.0) { phi2 = 2*Math.PI - phi2; }
+	if (sinPhiH < 0.0) { phi = 2*Math.PI - phi; }
         
-        Delta_phi = phi1 - phi2;
-        if (Delta_phi < 0) { Delta_phi+=2*Math.PI; }
-         
+        
+        // see trento conventions: https://arxiv.org/pdf/hep-ph/0410050.pdf
+//        Vector3 qHat = lv_q_gN_unit;
+//        Vector3 l = new Vector3(lv_e_gN.vect());
+//        Vector3 Ph = new Vector3(lv_p_gN.vect());
+//        
+//        Vector3 qHat_cross_l = qHat.cross(l);
+//        Vector3 qHat_cross_Ph = qHat.cross(Ph);
+//        Vector3 l_cross_Ph = l.cross(Ph);
+//        
+//        Vector3 qHat_cross_l_scaled = new Vector3();
+//        qHat_cross_l_scaled.setMagThetaPhi(qHat_cross_l.mag(),qHat_cross_l.theta(),qHat_cross_l.phi());
+//        
+//        Vector3 qHat_cross_Ph_scaled = new Vector3();
+//        qHat_cross_Ph_scaled.setMagThetaPhi(qHat_cross_Ph.mag(),qHat_cross_Ph.theta(),qHat_cross_Ph.phi());
+//        
+//        double cosphi = qHat_cross_l_scaled.dot(qHat_cross_Ph_scaled);
+//        phi = Math.acos(cosphi);
+//        
+//        double sinphi = l_cross_Ph.dot(qHat)/(qHat_cross_l.mag()*qHat_cross_Ph.mag());
+//        if (sinphi < 0.0) { phi = 2*Math.PI - phi; }
+        
     }
-    
     
     
     public int get_helicity() { return helicity; } // return helicity of event, 
@@ -361,77 +295,26 @@ public class Dihadrons {
     
     public double z() { return Double.valueOf(Math.round(z*100000))/100000; }// returns z
     
-    public double z1() { return Double.valueOf(Math.round(z1*100000))/100000; }// returns z1
-    
-    public double z2() { return Double.valueOf(Math.round(z2*100000))/100000; }// returns z2
-
     public double Mx() { return Double.valueOf(Math.round(Mx*100000))/100000; }// returns Mx(ep1p2)
-    
-    public double Mx1() { return Double.valueOf(Math.round(Mx1*100000))/100000; }// returns Mx(ep1)
-    
-    public double Mx2() { return Double.valueOf(Math.round(Mx2*100000))/100000; }// returns Mx(ep2)
-    
-    public double Mx3() { return Double.valueOf(Math.round(Mx3*100000))/100000; }// returns Mx(e)
-    
-    public double Mh() { return Double.valueOf(Math.round(Mh*100000))/100000; }// returns Mh
     
     public double pT() { return Double.valueOf(Math.round(pT*100000))/100000; }// returns pT
     
-    public double pT1() { return Double.valueOf(Math.round(pT1*100000))/100000; }// returns pT1
-    
-    public double pT2() { return Double.valueOf(Math.round(pT2*100000))/100000; }// returns pT2
-    
-    public double pTpT() { return Double.valueOf(Math.round(pT1*pT2*100000))/100000; } // returns ptpt
-    
     public double xF() { return Double.valueOf(Math.round(xF*100000))/100000; }// returns xF
-    
-    public double xF1() { return Double.valueOf(Math.round(xF1*100000))/100000; }// returns xF1
-    
-    public double xF2() { return Double.valueOf(Math.round(xF2*100000))/100000; }// returns xF2
     
     public double zeta() { return Double.valueOf(Math.round(zeta*100000))/100000; }// returns zeta
     
-    public double p1_Breit_pz() { return Double.valueOf(Math.round(p1_Breit_pz*100000))/100000; } 
+    public double p_Breit_pz() { return Double.valueOf(Math.round(p_Breit_pz*100000))/100000; } 
     // returns p1 pz in Breit
     
-    public double p2_Breit_pz() { return Double.valueOf(Math.round(p2_Breit_pz*100000))/100000; } 
-    // returns p2 pz in Breit
-    
-    public double p1_gN_pz() { return Double.valueOf(Math.round(p1_gN_pz*100000))/100000; } // returns p1 pz in gN
-    
-    public double p2_gN_pz() { return Double.valueOf(Math.round(p2_gN_pz*100000))/100000; } // returns p2 pz in gN
+    public double p_gN_pz() { return Double.valueOf(Math.round(p_gN_pz*100000))/100000; } // returns p1 pz in gN
     
     public double eta() { return Double.valueOf(Math.round(eta*100000))/100000; }// returns eta in the Breit frame
     
-    public double eta1() { return Double.valueOf(Math.round(eta1*100000))/100000; }// returns eta1 in the Breit frame
-    
-    public double eta2() { return Double.valueOf(Math.round(eta2*100000))/100000; }// returns eta2 in the Breit frame
-    
     public double eta_gN() { return Double.valueOf(Math.round(eta_gN*100000))/100000; }// returns eta_gN
     
-    public double eta1_gN() { return Double.valueOf(Math.round(eta1_gN*100000))/100000; }// returns eta1_gN
-    
-    public double eta2_gN() { return Double.valueOf(Math.round(eta2_gN*100000))/100000; }// returns eta2_gN
-    
-    public double Delta_eta() { return Double.valueOf(Math.round((eta1-eta2)*100000))/100000; }// returns Delta_eta, 
-    // should be Lorentz invariant
-    // maybe set a check for difference of Delta_eta in Breit and gN frames in future...
-    
-    public double theta() { return Double.valueOf(Math.round(theta*100000))/100000; }
-    // returns theta, the dihadron "decay angle"
-    
-    public double phih() { return Double.valueOf(Math.round(phih*100000))/100000; }// returns phih
-    
-    public double phiR() { return Double.valueOf(Math.round(phiR*100000))/100000; }// returns phiR
-    
-    public double phi1() { return Double.valueOf(Math.round(phi1*100000))/100000; }
+    public double phi() { return Double.valueOf(Math.round(phi*100000))/100000; }
     // returns phi1 (gamma*-nucleon frame)
     
-    public double phi2() { return Double.valueOf(Math.round(phi2*100000))/100000; }
-    // returns phi2 (gamma*-nucleon frame)
-    
-    public double Delta_phi() {return Double.valueOf(Math.round(Delta_phi*100000))/100000; }//returns Delta_phi (p1-p2)
-     
     public double Depolarization_A() { return Double.valueOf(Math.round(Depolarization_A*100000))/100000; }
     // returns Depolarization_A
     
@@ -463,52 +346,26 @@ public class Dihadrons {
     public double e_phi() { return Double.valueOf(Math.round((180/Math.PI)*e_phi*100000))/100000; } // returns electron lab 
     // frame polar angle
     
-    public double p_px() { return Double.valueOf(Math.round(p_px*100000))/100000; }// returns dihadron lab frame px
+    public double p_px() { return Double.valueOf(Math.round(p_px*100000))/100000; }// returns hadron lab frame px
     
-    public double p_py() { return Double.valueOf(Math.round(p_py*100000))/100000; }// returns dihadron lab frame py
+    public double p_py() { return Double.valueOf(Math.round(p_py*100000))/100000; }// returns hadron lab frame py
     
-    public double p_pz() { return Double.valueOf(Math.round(p_pz*100000))/100000; }// returns dihadron lab frame pz
+    public double p_pz() { return Double.valueOf(Math.round(p_pz*100000))/100000; }// returns hadron lab frame pz
     
-    public double p_p() { return Double.valueOf(Math.round(p_p*100000))/100000; }// returns dihadron lab frame p
+    public double p_p() { return Double.valueOf(Math.round(p_p*100000))/100000; }// returns hadron lab frame p
     
-    public double p_e() { return Double.valueOf(Math.round(p_e*100000))/100000; }// returns dihadron lab frame energy
+    public double p_e() { return Double.valueOf(Math.round(p_e*100000))/100000; }// returns hadron lab frame energy
     
-    public double p1_px() { return Double.valueOf(Math.round(p1_px*100000))/100000; }// returns hadron 1 lab frame px
-    
-    public double p1_py() { return Double.valueOf(Math.round(p1_py*100000))/100000; }// returns hadron 1 lab frame py
-    
-    public double p1_pz() { return Double.valueOf(Math.round(p1_pz*100000))/100000; }// returns hadron 1 lab frame pz
-    
-    public double p1_p() { return Double.valueOf(Math.round(p1_p*100000))/100000; }// returns hadron 1 lab frame p
-    
-    public double p1_e() { return Double.valueOf(Math.round(p1_e*100000))/100000; }// returns hadron 1 lab frame energy
-    
-    public double p1_theta() { return Double.valueOf(Math.round((180/Math.PI)*p1_theta*100000))/100000; } // returns p1 lab 
+    public double p_theta() { return Double.valueOf(Math.round((180/Math.PI)*p_theta*100000))/100000; } // returns p1 lab 
     // frame polar angle
     
-    public double p1_phi() { return Double.valueOf(Math.round((180/Math.PI)*p1_phi*100000))/100000; } // returns p1 lab 
+    public double p_phi() { return Double.valueOf(Math.round((180/Math.PI)*p_phi*100000))/100000; } // returns p1 lab 
     // frame polar angle
-    
-    public double p2_px() { return Double.valueOf(Math.round(p2_px*100000))/100000; }// returns hadron 2 lab frame px
-    
-    public double p2_py() { return Double.valueOf(Math.round(p2_py*100000))/100000; }// returns hadron 2 lab frame py
-    
-    public double p2_pz() { return Double.valueOf(Math.round(p2_pz*100000))/100000; }// returns hadron 2 lab frame pz
-    
-    public double p2_p() { return Double.valueOf(Math.round(p2_p*100000))/100000; }// returns hadron 2 lab frame p
-    
-    public double p2_e() { return Double.valueOf(Math.round(p2_e*100000))/100000; }// returns hadron 2 lab frame energy
-    
-    public double p2_theta() { return Double.valueOf(Math.round((180/Math.PI)*p2_theta*100000))/100000; } // returns p2 lab frame polar angle
-    
-    public double p2_phi() { return Double.valueOf(Math.round((180/Math.PI)*p2_phi*100000))/100000; } // returns p2 lab frame polar angle
-    
+  
     public double vz_e() { return Double.valueOf(Math.round(vz_e*100000))/100000; }// returns electron z vertex
     
-    public double vz_p1() { return Double.valueOf(Math.round(vz_p1*100000))/100000; }// returns electron z vertex
+    public double vz_p() { return Double.valueOf(Math.round(vz_p*100000))/100000; }// returns electron z vertex
     
-    public double vz_p2() { return Double.valueOf(Math.round(vz_p2*100000))/100000; }// returns electron z vertex
-   
     
     
     private static double particle_mass (int pid) {
