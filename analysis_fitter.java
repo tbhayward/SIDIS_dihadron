@@ -50,7 +50,7 @@ public class analysis_fitter extends GenericKinematicFitter {
         double r = Math.pow(px*px + py*py + pz*pz, 0.5);
         double theta = (180/Math.PI)*Math.acos(pz/r);
         
-        return 6<theta && theta<30;
+        return 4<theta && theta<35;
 //        return 15<theta && theta<25;
     }
     
@@ -355,17 +355,6 @@ public class analysis_fitter extends GenericKinematicFitter {
         return false;
     }
     
-//  TWO DIFFERENT SAMPLING FRACTION FUNCTIONS: ONE > 0.17 AND ONE BASED ON STD AWAY FROM MEAN
-//    public boolean calorimeter_sampling_fraction_cut(int current_Part, double p, HipoDataBank cal_Bank) {
-//        double cal_energy = 0;
-//        for (int current_Row = 0; current_Row < cal_Bank.rows(); current_Row++) {
-//            if (cal_Bank.getInt("pindex", current_Row)==current_Part)  {
-//                cal_energy+= cal_Bank.getFloat("energy", current_Row);
-//            }
-//        }
-//        return cal_energy/p > 0.17;
-//    }
-    
     public boolean calorimeter_sampling_fraction_cut(int current_Part, double p, HipoDataBank cal_Bank) {
         double scale = 3.5; // how many std away from mean to cut on
         int sector = -1;
@@ -410,8 +399,11 @@ public class analysis_fitter extends GenericKinematicFitter {
     }
     
     public boolean electron_z_vertex_cut(float vz) {
-        return vz>-13 && vz<12;
+        // Note that target was moved between spring18 and fall18 if spring18 data is used in the future!!!
+//        return vz>-13 && vz<12;
 //        return vz>-6 && vz<0;
+//        return vz>-13 && vz<12;
+        return Math.abs(vz+3)<5;
     }
     
     public boolean pion_z_vertex_cut(float vz, double trigger_electron_vz) {
@@ -462,7 +454,7 @@ public class analysis_fitter extends GenericKinematicFitter {
             && calorimeter_energy_cut(current_Part, cal_Bank) 
             && calorimeter_sampling_fraction_cut(current_Part, p, cal_Bank)
             && calorimeter_diagonal_cut(current_Part, p, cal_Bank)
-            && electron_z_vertex_cut(vz)
+//            && electron_z_vertex_cut(vz)
             && pcal_fiducial_cut(current_Part, cal_Bank)
             && dc_fiducial_cut(current_Part, rec_Bank, track_Bank, traj_Bank, run_Bank)
 //            && nphe_cut(current_Part, cc_Bank) // legacy cut used in the analysis note to check the effect
@@ -478,10 +470,10 @@ public class analysis_fitter extends GenericKinematicFitter {
         double p = Math.sqrt(Math.pow(px,2)+Math.pow(py,2)+Math.pow(pz,2));
         
         return true
-            && p > 1.20
+            && p > 1.00
             && p < 5 // this wasn't used in the dihadron publication but was used in the submitted single pion
             && forward_detector_cut(current_Part, rec_Bank)
-            && pion_z_vertex_cut(vz, trigger_electron_vz)
+//            && pion_z_vertex_cut(vz, trigger_electron_vz)
             && pion_chi2pid_cut(current_Part, rec_Bank)
             && dc_fiducial_cut(current_Part, rec_Bank, track_Bank, traj_Bank, run_Bank)
               ;
@@ -496,10 +488,11 @@ public class analysis_fitter extends GenericKinematicFitter {
         double p = Math.sqrt(Math.pow(px,2)+Math.pow(py,2)+Math.pow(pz,2));
         
         return true
-            && p > 1.20
+            && p > 1.00
             && p < 5 // this wasn't used in the dihadron publication but was used in the submitted single pion
-            && pion_z_vertex_cut(vz, trigger_electron_vz)
-//            && pion_chi2pid_cut(current_Part, rec_Bank)
+            && forward_detector_cut(current_Part, rec_Bank)
+//            && pion_z_vertex_cut(vz, trigger_electron_vz)
+            && pion_chi2pid_cut(current_Part, rec_Bank)
             && dc_fiducial_cut(current_Part, rec_Bank, track_Bank, traj_Bank, run_Bank)
               ;
     }
@@ -514,8 +507,8 @@ public class analysis_fitter extends GenericKinematicFitter {
         double p = Math.sqrt(Math.pow(px,2)+Math.pow(py,2)+Math.pow(pz,2));
         
         return true
-            && p > 0.5
-            && proton_z_vertex_cut(vz, pion_vz)
+            && p > 0.4
+//            && proton_z_vertex_cut(vz, pion_vz)
             && forward_detector_cut(current_Part, rec_Bank)
             && dc_fiducial_cut(current_Part, rec_Bank, track_Bank, traj_Bank, run_Bank)
               ;
@@ -559,7 +552,8 @@ public class analysis_fitter extends GenericKinematicFitter {
                     trigger_electron_vz = vz;
                 }
             }
-            if (p_max_index >= 0 && highest_e_in_fd_cut(p_max_index, rec_Bank)) { 
+//            if (p_max_index >= 0 && highest_e_in_fd_cut(p_max_index, rec_Bank)) { 
+            if (p_max_index >= 0) { 
                 // require that the highest momentum electron be in the forward detector 
                 // THIS MAY BE MODIFIED IN A FUTURE ANALYSIS
                 float px = rec_Bank.getFloat("px", p_max_index);

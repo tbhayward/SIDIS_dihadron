@@ -63,7 +63,7 @@ public class Hadron {
         if (variables.Q2()<1) { return false; } 
         if (variables.W()<2) { return false; } 
 //        else if (variables.xF1()<0.0 || variables.xF2()<0.0) { return false; } 
-        else if (variables.y()>0.80) { return false; } 
+//        else if (variables.y()>0.80) { return false; } 
         else if (variables.Mx()<0.0) { return false; } 
 	return true;
     }
@@ -111,6 +111,7 @@ public class Hadron {
         e_px = lv_e.px(); e_py = lv_e.py(); e_pz = lv_e.pz(); e_p = lv_e.p(); e_e = lv_e.e(); 
         e_theta = scattered_electron.theta();
         e_phi = scattered_electron.phi();
+        if (e_phi < 0) { e_phi = 2*Math.PI - e_phi; }
                 
         // DIS variables
         LorentzVector lv_q = new LorentzVector(lv_beam); lv_q.sub(lv_e);
@@ -156,6 +157,7 @@ public class Hadron {
         p_px = lv_p.px(); p_py = lv_p.py(); p_pz = lv_p.pz(); p_p = lv_p.p(); p_e = hadron.e(); 
         p_theta = hadron.theta();
         p_phi = hadron.phi();
+        if (p_phi < 0) { p_phi = 2*Math.PI + p_phi; }
     
         z = lv_p.e()/lv_q.e();
         
@@ -192,7 +194,6 @@ public class Hadron {
     
         xF =  2*(lv_p_gN.vect() .dot(lv_q_gN.vect())) /(lv_q_gN.vect().mag()*W);
         
-        System.out.println(lv_e_gN.e()+" "+lv_target_gN.e()+" "+lv_p_gN.vect().mag());
         zeta = lv_p_gN.e()/lv_target_gN.e(); // only really applicable when p1 is a proton
     
         p_gN_pz = lv_p_gN.vect().dot(lv_q_gN.vect())/lv_q_gN.vect().mag();
@@ -235,7 +236,7 @@ public class Hadron {
         
         phi = Math.acos(cosPhiH); 
         
-	if (sinPhiH < 0.0) { phi = 2*Math.PI - phi; }
+	if (sinPhiH < 0.0) { phi = 2*Math.PI + phi; }
         
         
         // see trento conventions: https://arxiv.org/pdf/hep-ph/0410050.pdf
@@ -262,7 +263,7 @@ public class Hadron {
     }
     
     
-    public int get_helicity() { return helicity; } // return helicity of event, 
+    public int get_helicity() { return -1*helicity; } // return helicity of event, 
     // -1, 0, or 1. 0 equals unassigned by EventBuilder
     
     public int get_runnum() { return runnum; }; // returns run number for polarizations and energy
@@ -340,10 +341,10 @@ public class Hadron {
     
     public double e_e() { return Double.valueOf(Math.round(e_e*100000))/100000; }// returns electron lab frame energy
     
-    public double e_theta() { return Double.valueOf(Math.round((180/Math.PI)*e_theta*100000))/100000; } // returns electron lab 
+    public double e_theta() { return Double.valueOf(Math.round(e_theta*100000))/100000; } // returns electron lab 
     // frame polar angle
     
-    public double e_phi() { return Double.valueOf(Math.round((180/Math.PI)*e_phi*100000))/100000; } // returns electron lab 
+    public double e_phi() { return Double.valueOf(Math.round(e_phi*100000))/100000; } // returns electron lab 
     // frame polar angle
     
     public double p_px() { return Double.valueOf(Math.round(p_px*100000))/100000; }// returns hadron lab frame px
@@ -356,10 +357,10 @@ public class Hadron {
     
     public double p_e() { return Double.valueOf(Math.round(p_e*100000))/100000; }// returns hadron lab frame energy
     
-    public double p_theta() { return Double.valueOf(Math.round((180/Math.PI)*p_theta*100000))/100000; } // returns p1 lab 
+    public double p_theta() { return Double.valueOf(Math.round(p_theta*100000))/100000; } // returns p1 lab 
     // frame polar angle
     
-    public double p_phi() { return Double.valueOf(Math.round((180/Math.PI)*p_phi*100000))/100000; } // returns p1 lab 
+    public double p_phi() { return Double.valueOf(Math.round(p_phi*100000))/100000; } // returns p1 lab 
     // frame polar angle
   
     public double vz_e() { return Double.valueOf(Math.round(vz_e*100000))/100000; }// returns electron z vertex
