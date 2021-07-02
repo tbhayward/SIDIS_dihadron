@@ -167,7 +167,6 @@ public class processing_single_hadrons {
 							file.append(pT+" "+zeta+" ");
 							file.append(eta+" ");
 							file.append(phi+" ");
-							file.append(vz_e+" "+vz_p+" "+" ");
 							file.append(vz_e+" "+vz_p+" "+p_phi+" "+e_phi+" \n");
 						}
 					}
