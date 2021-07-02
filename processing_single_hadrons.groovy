@@ -135,6 +135,7 @@ public class processing_single_hadrons {
 							double e_p = variables.e_p();
 							double e_theta = variables.e_theta();
 							double e_phi = variables.e_phi();
+							double p_phi = variables.p_phi();
 							double p_p = variables.p_p();
 							double p_theta = variables.p_theta();
 
@@ -166,7 +167,8 @@ public class processing_single_hadrons {
 							file.append(pT+" "+zeta+" ");
 							file.append(eta+" ");
 							file.append(phi+" ");
-							file.append(vz_e+" "+vz_p+" "+"\n");
+							file.append(vz_e+" "+vz_p+" "+" ");
+							file.append(vz_e+" "+vz_p+" "+p_phi+" "+e_phi+" \n");
 						}
 					}
 				}
@@ -178,7 +180,7 @@ public class processing_single_hadrons {
 			print("15:pT, 16:zeta ");
 			print("17:eta, ");
 			print("18:phi, ");
-			print("19: vz_e, 20: vz_p. \n");
+			print("19: vz_e, 20: vz_p, 21: p_phi(lab), 22: e_phi(lab) \n");
 
 			println(); println();
 			println("Set p1 PID = "+p1_Str+"\n");
