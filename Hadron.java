@@ -111,7 +111,7 @@ public class Hadron {
         e_px = lv_e.px(); e_py = lv_e.py(); e_pz = lv_e.pz(); e_p = lv_e.p(); e_e = lv_e.e(); 
         e_theta = scattered_electron.theta();
         e_phi = scattered_electron.phi();
-        if (e_phi < 0) { e_phi = 2*Math.PI - e_phi; }
+        if (e_phi < 0) { e_phi = 2*Math.PI + e_phi; }
                 
         // DIS variables
         LorentzVector lv_q = new LorentzVector(lv_beam); lv_q.sub(lv_e);
