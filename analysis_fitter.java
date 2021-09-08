@@ -634,6 +634,7 @@ public class analysis_fitter extends GenericKinematicFitter {
                 
                 // requires the particle to be proton by EventBuilder & for an electron to have been assigned to event
                 
+                
                 // load momenta and vertices
                 float px = rec_Bank.getFloat("px", current_Part);
                 float py = rec_Bank.getFloat("py", current_Part);

@@ -57,6 +57,7 @@ public class Dihadrons {
     protected double e_px, e_py, e_pz, e_p, e_e, e_theta, e_phi; // electron kinematics
     protected double p_px, p_py, p_pz, p_p, p_e; // dihadron kinematics, mass is Mh
     protected double p1_px, p1_py, p1_pz, p1_p, p1_e, p1_theta, p1_phi; // p1 kinematics
+    protected double p1_px_unc, p1_py_unc, p1_pz_unc, p1_p_unc, mass2, mass2_unc;
     protected double p2_px, p2_py, p2_pz, p2_p, p2_e, p2_theta, p2_phi; // p2 kinematics
     protected double vz_e, vz_p1, vz_p2;
     
@@ -69,7 +70,9 @@ public class Dihadrons {
         if (variables.Q2()<1) { return false; } 
         if (variables.W()<2) { return false; } 
         else if (variables.y()>0.80) { return false; } 
-        else if (variables.Mx()<0.0) { return false; } 
+//        else if (variables.Mx()<0.0) { return false; } 
+//        else if (variables.Mx1()<0.0) { return false; } 
+//        else if (variables.Mx2()<0.0) { return false; } 
 	return true;
     }
     
@@ -172,11 +175,33 @@ public class Dihadrons {
         LorentzVector lv_p2 = new LorentzVector();
         lv_p2.setPxPyPzM(p2.px(), p2.py(), p2.pz(), p2.mass());
         
+        
+        // missing mass calculations
+        // uncorrected
+        LorentzVector lv_Mx_unc = new LorentzVector(lv_q); lv_Mx_unc.add(lv_target); lv_Mx_unc.sub(lv_p1); 
+        lv_Mx_unc.sub(lv_p2);
+        mass2_unc = lv_Mx_unc.mass2();
+        
+        // Andrey Kim's momentum corrections for protons, from his MC pi0 analysis
+        p1_px_unc = lv_p1.px(); p1_py_unc = lv_p1.py(); p1_pz_unc = lv_p1.pz(); p1_p_unc = lv_p1.p();
+        double dp = 0;
+        if ((180/Math.PI)*p1_theta < 27) {
+            dp = Math.exp(-2.739-3.932*p1_p)+0.002907;
+        } else {
+            dp = Math.exp(-1.2-4.228*p1_p)+0.007502;
+        }
+        double fe = (dp+p1.p())/p1.p();
+        lv_p1.setPxPyPzM(fe*p1.px(), fe*p1.py(), fe*p1.pz(), p1.mass());
+        
         // kinematics of hadrons
         p1_px = lv_p1.px(); p1_py = lv_p1.py(); p1_pz = lv_p1.pz(); p1_p = lv_p1.p(); p1_e = p1.e(); 
         p1_theta = p1.theta();
         p1_phi = p1.phi();
         if (p1_phi < 0) { p1_phi = 2*Math.PI + p1_phi; }
+//        System.out.println(p1_px);
+        
+        
+        
         p2_px = lv_p2.px(); p2_py = lv_p2.py(); p2_pz = lv_p2.pz(); p2_p = lv_p2.p(); p2_e = p2.e();
         p2_theta = p2.theta();
         p2_phi = p2.phi();
@@ -189,11 +214,11 @@ public class Dihadrons {
         
         // missing mass calculations
         LorentzVector lv_Mx = new LorentzVector(lv_q); lv_Mx.add(lv_target); lv_Mx.sub(lv_p1); lv_Mx.sub(lv_p2);
-        Mx = lv_Mx.mass();
-        LorentzVector lv_Mx1 = new LorentzVector(lv_q); lv_Mx1.add(lv_target); lv_Mx1.sub(lv_p2); 
+        Mx = lv_Mx.mass(); mass2 = lv_Mx.mass2(); 
+        LorentzVector lv_Mx1 = new LorentzVector(lv_q); lv_Mx1.add(lv_target); lv_Mx1.sub(lv_p1); 
         Mx1 = lv_Mx1.mass(); // missing mass with p1 observed
-        LorentzVector lv_Mx2 = new LorentzVector(lv_q); lv_Mx2.add(lv_target); lv_Mx2.sub(lv_p1);
-        Mx2 = lv_Mx2.mass(); // missing mass with p2 ovserved
+        LorentzVector lv_Mx2 = new LorentzVector(lv_q); lv_Mx2.add(lv_target); lv_Mx2.sub(lv_p2);
+        Mx2 = lv_Mx2.mass(); // missing mass with p2 observed
         
         // boost to gamma*-nucleon center of mass frame
         LorentzVector lv_p_gN = new LorentzVector(lv_p); lv_p_gN.boost(gNBoost);
@@ -482,6 +507,18 @@ public class Dihadrons {
     public double p1_pz() { return Double.valueOf(Math.round(p1_pz*100000))/100000; }// returns hadron 1 lab frame pz
     
     public double p1_p() { return Double.valueOf(Math.round(p1_p*100000))/100000; }// returns hadron 1 lab frame p
+    
+    public double p1_px_unc() { return Double.valueOf(Math.round(p1_px_unc*100000))/100000; }// returns hadron 1 lab frame px
+    
+    public double p1_py_unc() { return Double.valueOf(Math.round(p1_py_unc*100000))/100000; }// returns hadron 1 lab frame py
+    
+    public double p1_pz_unc() { return Double.valueOf(Math.round(p1_pz_unc*100000))/100000; }// returns hadron 1 lab frame pz
+    
+    public double p1_p_unc() { return Double.valueOf(Math.round(p1_p_unc*100000))/100000; }// returns hadron 1 lab frame p
+    
+    public double mass2() { return Double.valueOf(Math.round(mass2*100000))/100000; }// returns mass2
+    
+    public double mass2_unc() { return Double.valueOf(Math.round(mass2_unc*100000))/100000; }// returns mass2
     
     public double p1_e() { return Double.valueOf(Math.round(p1_e*100000))/100000; }// returns hadron 1 lab frame energy
     
