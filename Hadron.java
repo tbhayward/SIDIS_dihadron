@@ -280,6 +280,8 @@ public class Hadron {
     
     public double Mx() { return Double.valueOf(Math.round(Mx*100000))/100000; }// returns Mx(ep1p2)
     
+    public double Mx2() { return Double.valueOf(Math.round(Mx2*100000))/100000; }// returns Mx(ep1p2)
+    
     public double pT() { return Double.valueOf(Math.round(pT*100000))/100000; }// returns pT
     
     public double xF() { return Double.valueOf(Math.round(xF*100000))/100000; }// returns xF
