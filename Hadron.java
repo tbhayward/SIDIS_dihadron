@@ -30,7 +30,7 @@ public class Hadron {
     // hadrons. Convention is ordered by mass, then charge. For example in pi+pi- pi+ is hadron 1
     // in proton+pi+ the proton is p1, in k+pi- the kaon is p1.
     protected double Q2, W, gamma, nu, x, y, z;
-    protected double Mx; 
+    protected double Mx, Mx2; 
     protected double Mh, pT, xF, zeta;
     protected double eta, eta_gN;
     // eta is the rapidity, preferred by theorists in the Breit frame (e.g. eta1 is in Breit) 
@@ -81,6 +81,8 @@ public class Hadron {
         // default beam energy set to rga fall 2018
         double Eb = 10.6041; // rga fall 2018
         if (runnum > 6000) { Eb = 10.1998;} // this needs to be checked or made more precise than 6000
+        // these are, at the time of writing, just for my analysis of Fall2018 inbending and Spring2019 inbending
+        // I'm unsure about other beam energies at different times
         
         num_elec = recEvent.countByPid(11); // returns number of electrons
 	num_piplus = recEvent.countByPid(211); 
@@ -164,6 +166,7 @@ public class Hadron {
         // missing mass calculations
         LorentzVector lv_Mx = new LorentzVector(lv_q); lv_Mx.add(lv_target); lv_Mx.sub(lv_p); 
         Mx = lv_Mx.mass();
+        Mx2 = lv_Mx.mass2(); // missing mass squared
         
         // boost to gamma*-nucleon center of mass frame
         LorentzVector lv_p_gN = new LorentzVector(lv_p); lv_p_gN.boost(gNBoost);
@@ -238,28 +241,7 @@ public class Hadron {
         
 	if (sinPhiH < 0.0) { phi = 2*Math.PI + phi; }
         
-        
-        // see trento conventions: https://arxiv.org/pdf/hep-ph/0410050.pdf
-//        Vector3 qHat = lv_q_gN_unit;
-//        Vector3 l = new Vector3(lv_e_gN.vect());
-//        Vector3 Ph = new Vector3(lv_p_gN.vect());
-//        
-//        Vector3 qHat_cross_l = qHat.cross(l);
-//        Vector3 qHat_cross_Ph = qHat.cross(Ph);
-//        Vector3 l_cross_Ph = l.cross(Ph);
-//        
-//        Vector3 qHat_cross_l_scaled = new Vector3();
-//        qHat_cross_l_scaled.setMagThetaPhi(qHat_cross_l.mag(),qHat_cross_l.theta(),qHat_cross_l.phi());
-//        
-//        Vector3 qHat_cross_Ph_scaled = new Vector3();
-//        qHat_cross_Ph_scaled.setMagThetaPhi(qHat_cross_Ph.mag(),qHat_cross_Ph.theta(),qHat_cross_Ph.phi());
-//        
-//        double cosphi = qHat_cross_l_scaled.dot(qHat_cross_Ph_scaled);
-//        phi = Math.acos(cosphi);
-//        
-//        double sinphi = l_cross_Ph.dot(qHat)/(qHat_cross_l.mag()*qHat_cross_Ph.mag());
-//        if (sinphi < 0.0) { phi = 2*Math.PI - phi; }
-        
+        // see trento conventions: https://arxiv.org/pdf/hep-ph/0410050.pdf        
     }
     
     

@@ -349,7 +349,7 @@ public class analysis_fitter extends GenericKinematicFitter {
         for (int current_Row = 0; current_Row < cal_Bank.rows(); current_Row++) {
             if (cal_Bank.getInt("pindex", current_Row)==current_Part && 
                     cal_Bank.getInt("layer", current_Row)==1) {
-                return cal_Bank.getFloat("energy", current_Row) > 0.07;
+                return cal_Bank.getFloat("energy", current_Row) > 0.07; // 0.06 in EventBuilder
             }
         }
         return false;
@@ -533,7 +533,7 @@ public class analysis_fitter extends GenericKinematicFitter {
             double trigger_electron_vz = -99;
             double pion_vz = -99;
             double p_max = 0;
-            int p_max_index = -99; // find the index of the highest energy electorn before FD cut
+            int p_max_index = -99; // find the index of the highest energy electron before FD cut
             
             // cycle over the particles in recBank and investigate electron and pion IDs
             for (int current_Part = 0; current_Part < rec_Bank.rows(); current_Part++) {
