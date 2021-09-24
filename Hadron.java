@@ -239,7 +239,7 @@ public class Hadron {
         
         phi = Math.acos(cosPhiH); 
         
-	if (sinPhiH < 0.0) { phi = 2*Math.PI + phi; }
+	if (sinPhiH < 0.0) { phi = 2*Math.PI - phi; }
         
         // see trento conventions: https://arxiv.org/pdf/hep-ph/0410050.pdf        
     }
