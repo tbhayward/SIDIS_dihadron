@@ -1,6 +1,6 @@
 /**
-** Timothy B. Hayward, updated May 11, 2021
-** analysis codes for dihadron analysis
+** Timothy B. Hayward, last updated September 24, 2021
+** analysis codes for CLAS12 SIDIS analyses
 **/
 
 
@@ -8,8 +8,10 @@ Description of the java code used by Timothy Hayward for the RGA first experimen
 Thesis: https://www.jlab.org/Hall-B/general/thesis/THayward_thesis.pdf
 Letter: https://arxiv.org/abs/2101.04842
 
-Updated now to include more generlized final states (changed from pi+ pi- assumed to user input for p1 and p2). 
+- Updated now to include more generlized final states (changed from pi+ pi- assumed to user input for p1 and p2). 
 In use with the current "back-to-back" proton-pi+ analysis.
+
+- Updated now to include single hadron analysis scripts (my thesis work was just dihadrons). 
 
 Code relies on the CLAS12 quality assurance (QA) repository maintained by Christopher Dilks: https://github.com/JeffersonLab/clasqaDB
 if desired, you can comment out that line in the processing.groovy script but any final analysis should likely be using the QA.
@@ -28,18 +30,25 @@ II. dihadrons.java
   Takes events from the events produced by analysis_fitter.java and a given p1 and p2 particle identification number. 
   See the processing.groovy scripts to see how to access these variables.
   
+IIb. hadron.java
+  New class for analyzing SIDIS events with a single hadron detected in the final state.
+  
 III. hayward_coatjava_extensions.jar
-  The distribution version of all my classes if you want to just try running the code as is first.
+  The distribution version of all my classes if you want to just try running the code as is first. You'll need this one in your 
+  myClara/plugins/clas12/lib/services/ directory to use this with CLAS12 Groovy code. 
   
 IV. processing.groovy
   I prefer to process the clas12 hipo4 files and create text outputs that I can then import into Mathematica, root, etc.
-  It's not the most efficient but it is nicely universal. This script accepts 5 input arguments:
+  It's not the most efficient but it is very nicely universal. This script accepts 5 input arguments:
     1. hipo file directory 
       a directory such as, /cache/clas12/rg-a/production/recon/fall2018/torus-1/pass1/v0/dst/train/skim4/, that contains hipo4 data files.
     2. pid for p1 (momentum 1), i.e. 211 for pi+
     3. pid for p2 (momentum 2), i.e. -211 for pi-
     4. output text file name
     5. number of files to process in the directory
+    
+IVb. processing_single_hadrons.groovy
+  New script for analyzing SIDIS events with a single hadron detected in the final state. 
     
 V. processing_mc.groovy
   Same as above; outputs a text file with event-by-event information. Designed to be used with MC files instead however.
