@@ -159,7 +159,7 @@ public class Hadron {
         p_px = lv_p.px(); p_py = lv_p.py(); p_pz = lv_p.pz(); p_p = lv_p.p(); p_e = hadron.e(); 
         p_theta = hadron.theta();
         p_phi = hadron.phi();
-        if (p_phi < 0) { p_phi = 2*Math.PI + p_phi; }
+        if (p_phi < 0) { p_phi = 2*Math.PI - p_phi; }
     
         z = lv_p.e()/lv_q.e();
         
