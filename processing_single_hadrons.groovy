@@ -58,8 +58,8 @@ public class processing_single_hadrons {
 		String output_file;
 		if (args.length < 3) {
 			// uses dummy name for output file if not specified
-			println("WARNING: Specify an output file name. Set to \"dihadron_dummy_out.txt\".\n");
-			output_file = "dihadron_dummy_out.txt"
+			println("WARNING: Specify an output file name. Set to \"hadron_dummy_out.txt\".\n");
+			output_file = "hadron_dummy_out.txt"
 		} else {
 			output_file = args[2];
 		}
@@ -132,29 +132,30 @@ public class processing_single_hadrons {
 							int helicity = variables.get_helicity(); // helicity of event, might be 0
 
 							// lab kinematics
-							double e_p = variables.e_p();
-							double e_theta = variables.e_theta();
-							double e_phi = variables.e_phi();
-							double p_phi = variables.p_phi();
-							double p_p = variables.p_p();
-							double p_theta = variables.p_theta();
+							double e_p = variables.e_p(); // lab frame momentum
+							double e_theta = variables.e_theta(); // lab polar angle
+							double e_phi = variables.e_phi();  // lab azimuthal angle
+							double p_phi = variables.p_phi(); // lab azimuthal angle
+							double p_p = variables.p_p(); // lab momentum
+							double p_theta = variables.p_theta(); // lab polar angle
 
 							// DIS variables
-							double Q2 = variables.Q2();
-							double W = variables.W();
+							double Q2 = variables.Q2(); // my jar cuts on Q2 > 1
+							double W = variables.W(); // my jar cuts on W > 1
 							double y = variables.y();
 							double Mx = variables.Mx();
+							double Mx2 = variables.Mx2(); // missing mass square
 
 							// SIDIS variables
-							double x = variables.x();
+							double x = variables.x(); // Bjorken-x
 							double z = variables.z();
-							double xF = variables.xF();
+							double xF = variables.xF(); // Feynman-x
 							double pT = variables.pT();
-							double eta = variables.eta();
+							double eta = variables.eta(); // rapidity 
 							double zeta = variables.zeta();
 
 							// angles 
-							double phi = variables.phi();
+							double phi = variables.phi(); // trento phi of the hadron
 
 							// vertices 
 							double vz_e = variables.vz_e();
@@ -163,7 +164,7 @@ public class processing_single_hadrons {
 							// append event to next line of the text file
 							file.append(runnum+" "+evnum+" "+helicity+" ");
 							file.append(e_p+" "+e_theta+" "+p_p+" "+p_theta+" ");
-							file.append(Q2+" "+W+" "+Mx+" "+x+" "+y+" "+z+" "+xF+" ");
+							file.append(Q2+" "+W+" "+Mx+" "+Mx2+" "+x+" "+y+" "+z+" "+xF+" ");
 							file.append(pT+" "+zeta+" ");
 							file.append(eta+" ");
 							file.append(phi+" ");
@@ -174,12 +175,12 @@ public class processing_single_hadrons {
 			}
 			println(); println();
 			print("1:runnum, 2:evnum, 3:helicity, 4:e_p, 5:e_theta, 6:p_p, 7:p_theta, ");
-			print("8:Q2, 9:W, 10:Mx, 11:x, 12:y, 13:z, ");
-			print("14:xF, ");
-			print("15:pT, 16:zeta ");
-			print("17:eta, ");
-			print("18:phi, ");
-			print("19: vz_e, 20: vz_p, 21: p_phi(lab), 22: e_phi(lab) \n");
+			print("8:Q2, 9:W, 10:Mx, 11: Mx2, 12:x, 13:y, 14:z, ");
+			print("15:xF, ");
+			print("16:pT, 17:zeta ");
+			print("18:eta, ");
+			print("19:phi, "); // this is the trento phi of the Hadron
+			print("20: vz_e, 21: vz_p, 22: p_phi(lab), 23: e_phi(lab) \n");
 
 			println(); println();
 			println("Set p1 PID = "+p1_Str+"\n");
