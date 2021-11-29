@@ -15,11 +15,11 @@ import org.jlab.clas.physics.*;
 
 //import org.apache.commons.math3.*;
 
-public class analysis_fitter extends GenericKinematicFitter {
+public class RICH_fitter extends GenericKinematicFitter {
 
     protected final Double mybeam;
 
-    public analysis_fitter(double beam) {
+    public RICH_fitter(double beam) {
         super(beam);
         mybeam = beam;
     } 
@@ -461,7 +461,7 @@ public class analysis_fitter extends GenericKinematicFitter {
     public boolean electron_test(int current_Part, double p, float vz, HipoDataBank rec_Bank, HipoDataBank cal_Bank, 
             HipoDataBank track_Bank, HipoDataBank traj_Bank, HipoDataBank run_Bank, HipoDataBank cc_Bank) {
         return true
-            && p > 2.25 // higher cut ultimately enforced when we cut on y < 0.8 or y < 0.75
+            && p > 2.00 // higher cut ultimately enforced when we cut on y < 0.8 or y < 0.75
                 // this is just to speed up processing
             && forward_detector_cut(current_Part, rec_Bank)
             && calorimeter_energy_cut(current_Part, cal_Bank) 
@@ -483,8 +483,8 @@ public class analysis_fitter extends GenericKinematicFitter {
         double p = Math.sqrt(Math.pow(px,2)+Math.pow(py,2)+Math.pow(pz,2));
         
         return true
-            && p > 1.15
-            && p < 5.25 // this wasn't used in the dihadron publication but was used in the submitted single pion
+//            && p > 1.15
+//            && p < 5.25 // this wasn't used in the dihadron publication but was used in the submitted single pion
             && forward_detector_cut(current_Part, rec_Bank)
             && pion_z_vertex_cut(vz, trigger_electron_vz)
             && pion_chi2pid_cut(current_Part, rec_Bank)
@@ -502,8 +502,8 @@ public class analysis_fitter extends GenericKinematicFitter {
         double p = Math.sqrt(Math.pow(px,2)+Math.pow(py,2)+Math.pow(pz,2));
         
         return true
-            && p > 1.15
-            && p < 5.25 // this wasn't used in the dihadron publication but was used in the submitted single pion
+//            && p > 1.15
+//            && p < 5.25 // this wasn't used in the dihadron publication but was used in the submitted single pion
             && forward_detector_cut(current_Part, rec_Bank)
             && pion_z_vertex_cut(vz, trigger_electron_vz)
             && hadron_chi2pid_cut(current_Part, rec_Bank)
@@ -521,7 +521,7 @@ public class analysis_fitter extends GenericKinematicFitter {
         double p = Math.sqrt(Math.pow(px,2)+Math.pow(py,2)+Math.pow(pz,2));
         
         return true
-            && p > 0.4
+//            && p > 0.4
             && proton_z_vertex_cut(vz, pion_vz)
             && forward_detector_cut(current_Part, rec_Bank)
             && dc_fiducial_cut(current_Part, rec_Bank, track_Bank, traj_Bank, run_Bank)
@@ -624,30 +624,26 @@ public class analysis_fitter extends GenericKinematicFitter {
             for (int current_Part = 0; current_Part < rec_Bank.rows(); current_Part++) {
                 int pid = rec_Bank.getInt("pid", current_Part);
                 
-                if ((Math.abs(pid)!=321) || trigger_electron_vz == -99) { continue; }
-                // requires the particle to be pion by EventBuilder and for an electron to have been assigned to event
-                // if no electron was assigned we just skip
+                if (pid!=22 || pion_vz == -99) { continue; }
+                
+                // requires the particle to be photon by EventBuilder & for an electron to have been assigned to event
                 
                 // load momenta and vertices
                 float px = rec_Bank.getFloat("px", current_Part);
                 float py = rec_Bank.getFloat("py", current_Part);
                 float pz = rec_Bank.getFloat("pz", current_Part);
-                double p = Math.sqrt(Math.pow(px,2)+Math.pow(py,2)+Math.pow(pz,2));
                 float vx = rec_Bank.getFloat("vx",current_Part);
                 float vy = rec_Bank.getFloat("vy",current_Part);
                 float vz = rec_Bank.getFloat("vz",current_Part);
-                pion_vz = vz;
                 if (particle_test(current_Part, rec_Bank) 
-                    && kaon_test(current_Part, pid, vz, trigger_electron_vz, rec_Bank, cal_Bank, 
-                    track_Bank, traj_Bank, run_Bank)) {
-                    // check for pion PID
+                    && photon_test(current_Part, rec_Bank, cal_Bank)) {
                    
                    Particle part = new Particle(pid,px,py,pz,vx,vy,vz);
                    physEvent.addParticle(part);   
                }
             }
             
-            
+            // proton ID no good in the RICH
             for (int current_Part = 0; current_Part < rec_Bank.rows(); current_Part++) {
                 int pid = rec_Bank.getInt("pid", current_Part);
                 
@@ -673,26 +669,33 @@ public class analysis_fitter extends GenericKinematicFitter {
                }
             }
             
-            for (int current_Part = 0; current_Part < rec_Bank.rows(); current_Part++) {
-                int pid = rec_Bank.getInt("pid", current_Part);
-                
-                if (pid!=22 || pion_vz == -99) { continue; }
-                
-                // requires the particle to be photon by EventBuilder & for an electron to have been assigned to event
-                
-                // load momenta and vertices
-                float px = rec_Bank.getFloat("px", current_Part);
-                float py = rec_Bank.getFloat("py", current_Part);
-                float pz = rec_Bank.getFloat("pz", current_Part);
-                float vx = rec_Bank.getFloat("vx",current_Part);
-                float vy = rec_Bank.getFloat("vy",current_Part);
-                float vz = rec_Bank.getFloat("vz",current_Part);
-                if (particle_test(current_Part, rec_Bank) 
-                    && photon_test(current_Part, rec_Bank, cal_Bank)) {
-                   
-                   Particle part = new Particle(pid,px,py,pz,vx,vy,vz);
-                   physEvent.addParticle(part);   
-               }
+            // if pion or kaon track identified in the RICH
+            if (event.hasBank("RICH::hadCher")) {
+                HipoDataBank rich_Bank = (HipoDataBank) event.getBank("RICH::hadCher"); // load RICH particle bank
+                if (rich_Bank.rows() > 1) {  }
+                else {
+                    int pindex = rich_Bank.getInt("pindex", 0);
+                    if (particle_test(pindex, rec_Bank)) { // FD check
+                        if (rich_Bank.getInt("best_PID", 0)==3 || 
+                            rich_Bank.getInt("best_PID", 0)==4) {
+                           
+                            int best_PID = rich_Bank.getInt("best_PID", 0);
+                            int pid = 0;
+                            if (best_PID==3) { pid = 211*rec_Bank.getInt("charge", pindex); }
+                            if (best_PID==4) { pid = 321*rec_Bank.getInt("charge", pindex); }
+                            if (best_PID==5) { pid = 2212*rec_Bank.getInt("charge", pindex); }
+                            // load momenta and vertices
+                            float px = rec_Bank.getFloat("px", pindex);
+                            float py = rec_Bank.getFloat("py", pindex);
+                            float pz = rec_Bank.getFloat("pz", pindex);
+                            float vx = rec_Bank.getFloat("vx", pindex);
+                            float vy = rec_Bank.getFloat("vy", pindex);
+                            float vz = rec_Bank.getFloat("vz", pindex); 
+                            Particle part = new Particle(pid,px,py,pz,vx,vy,vz);
+                        physEvent.addParticle(part);
+                        }
+                    }
+                }
             }
             
             return physEvent;
