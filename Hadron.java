@@ -56,15 +56,18 @@ public class Hadron {
     
     protected double p_Breit_pz, p_gN_pz;
     
+    protected int RICH_pid;
+    protected double chi2pid, RQ_prob, el_prob, pi_prob, k_prob, pr_prob;
+    
     public static boolean channel_test(Hadron variables) {
 //        if (variables.helicity==0){ 
 //            System.out.println("You're returning false because helicity = 0. Is this data or MC?");
 //            return false; }
         if (variables.Q2()<1) { return false; } 
         if (variables.W()<2) { return false; } 
-//        else if (variables.xF1()<0.0 || variables.xF2()<0.0) { return false; } 
-//        else if (variables.y()>0.80) { return false; } 
-        else if (variables.Mx()<0.0) { return false; } 
+//        if (variables.xF()<0) { return false; } 
+        else if (variables.y()>0.75) { return false; } 
+        else if (variables.Mx()<0) { return false; } 
 	return true;
     }
     
@@ -74,6 +77,7 @@ public class Hadron {
         // load banks
         HipoDataBank eventBank = (HipoDataBank) event.getBank("REC::Event");
         HipoDataBank configBank = (HipoDataBank) event.getBank("RUN::config");
+        HipoDataBank rec_Bank = (HipoDataBank) event.getBank("REC::Particle"); // load particle bank
         
         helicity = eventBank.getByte("helicity", 0);
         runnum = configBank.getInt("run",0); // used for beam energy and polarization
@@ -145,7 +149,7 @@ public class Hadron {
         Vector3 BreitBoost = Breit.boostVector();
         BreitBoost.negative();
         
-        // set up hadrons and dihadron
+        // set up hadrons 
         String pIndex_string = "["+pPID+","+pIndex+"]";
         Particle hadron = recEvent.getParticle(pIndex_string);
         
@@ -159,7 +163,44 @@ public class Hadron {
         p_px = lv_p.px(); p_py = lv_p.py(); p_pz = lv_p.pz(); p_p = lv_p.p(); p_e = hadron.e(); 
         p_theta = hadron.theta();
         p_phi = hadron.phi();
-        if (p_phi < 0) { p_phi = 2*Math.PI - p_phi; }
+        if (p_phi < 0) { p_phi = 2*Math.PI + p_phi; }
+        
+        
+        // hadron matching from REC::Particle to RICH::hadCher track
+        chi2pid = 100; 
+        RICH_pid = -1;
+        RQ_prob = -1; el_prob = -1; pi_prob = -1; k_prob = -1; pr_prob = -1;
+        if (event.hasBank("RICH::hadCher") ) {
+            HipoDataBank rich_Bank = (HipoDataBank) event.getBank("RICH::hadCher");
+            if (rich_Bank.rows() > 1) { } else { // not validated for more than one track
+                int pindex = rich_Bank.getInt("pindex", 0);
+                
+                chi2pid = rec_Bank.getFloat("chi2pid", pindex);
+                
+                float px = rec_Bank.getFloat("px", pindex);
+                float py = rec_Bank.getFloat("py", pindex);
+                float pz = rec_Bank.getFloat("pz", pindex);
+                double p = Math.sqrt(Math.pow(px,2)+Math.pow(py,2)+Math.pow(pz,2));
+                double theta = Math.acos(pz/p);
+                double phi = Math.toDegrees(Math.atan2(px,py));
+                phi = phi - 90; if (phi < 0) { phi = 360 + phi; } phi = 360 - phi;
+                phi = Math.toRadians(phi);
+                if ( Math.abs((180/Math.PI)*(theta-p_theta))<2 &&
+                    Math.abs((180/Math.PI)*(phi-p_phi))<6) {
+                    if (rich_Bank.getFloat("RQ_prob", 0) != 0) {
+                        int best_PID = rich_Bank.getInt("best_PID", 0);
+                        if (best_PID==3) { RICH_pid = 211*rec_Bank.getInt("charge", pindex); }
+                        if (best_PID==4) { RICH_pid = 321*rec_Bank.getInt("charge", pindex); }
+                        if (best_PID==5) { RICH_pid = 2212*rec_Bank.getInt("charge", pindex); }
+                        RQ_prob = rich_Bank.getFloat("RQ_prob", 0);
+                        el_prob = rich_Bank.getFloat("el_prob", 0);
+                        pi_prob = rich_Bank.getFloat("pi_prob", 0);
+                        k_prob = rich_Bank.getFloat("k_prob", 0);
+                        pr_prob = rich_Bank.getFloat("pr_prob", 0);
+                    }
+                }   
+            }
+        }
     
         z = lv_p.e()/lv_q.e();
         
@@ -350,6 +391,20 @@ public class Hadron {
     public double vz_e() { return Double.valueOf(Math.round(vz_e*100000))/100000; }// returns electron z vertex
     
     public double vz_p() { return Double.valueOf(Math.round(vz_p*100000))/100000; }// returns electron z vertex
+    
+    public int RICH_pid() { return RICH_pid; } // returns PID assigned by the RICH
+    
+    public double chi2pid() { return Double.valueOf(Math.round(chi2pid*100000))/100000; }// returns chi2pid of hadron
+    
+    public double RQ_prob() { return Double.valueOf(Math.round(RQ_prob*100000))/100000; }// returns RQ_prob
+    
+    public double el_prob() { return Double.valueOf(Math.round(el_prob*100000))/100000; }// returns el_prob
+    
+    public double pi_prob() { return Double.valueOf(Math.round(pi_prob*100000))/100000; }// returns pi_prob
+    
+    public double k_prob() { return Double.valueOf(Math.round(k_prob*100000))/100000; }// returns k_prob
+    
+    public double pr_prob() { return Double.valueOf(Math.round(pr_prob*100000))/100000; }// returns pr_prob
     
     
     

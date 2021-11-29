@@ -82,6 +82,7 @@ public class processing_single_hadrons {
 
 		int hadron_pair_counts = 0;
 		GenericKinematicFitter research_fitter = new analysis_fitter(10.6041); // load my kinematic fitter/PID
+		// GenericKinematicFitter RICH_fitter = new RICH_fitter(10.6041); // load fitter using RICH
 		EventFilter filter = new EventFilter("11:"+p1_Str+":X+:X-:Xn"); // set filter for final states
 		// setup QA database
 		QADB qa = new QADB();
@@ -103,7 +104,7 @@ public class processing_single_hadrons {
 			while(reader.hasEvent()==true){
 				num_events++; 
 				if (num_events%100000 == 0) { // not necessary
-					print("processed: "+num_events+" events. ");
+					println("processed: "+num_events+" events. ");
 				}
 
 				// get run and event numbers
@@ -161,26 +162,42 @@ public class processing_single_hadrons {
 							double vz_e = variables.vz_e();
 							double vz_p = variables.vz_p();
 
+							// rich tests
+							double chi2pid = variables.chi2pid(); // 
+							int RICH_pid = variables.RICH_pid();
+							double RQ_prob = variables.RQ_prob();
+							double pi_prob = variables.pi_prob();
+							double k_prob = variables.k_prob();
+							double pr_prob = variables.pr_prob();
+							if (RICH_pid!=-1) {println(RICH_pid + " " + RQ_prob+" "+chi2pid);}
+
 							// append event to next line of the text file
 							file.append(runnum+" "+evnum+" "+helicity+" ");
-							file.append(e_p+" "+e_theta+" "+p_p+" "+p_theta+" ");
+							file.append(e_p+" "+e_theta+" "+e_phi+" "+vz_e+" ");
+							file.append(p_p+" "+p_theta+" "+p_phi+" "+vz_p+" ");
 							file.append(Q2+" "+W+" "+Mx+" "+Mx2+" "+x+" "+y+" "+z+" "+xF+" ");
 							file.append(pT+" "+zeta+" ");
 							file.append(eta+" ");
 							file.append(phi+" ");
-							file.append(vz_e+" "+vz_p+" "+p_phi+" "+e_phi+" \n");
+							file.append(RICH_pid+" "+RQ_prob+" "+pi_prob+" "+k_prob+" "+pr_prob+" ");
+							file.append(chi2pid);
+							file.append(" \n");
 						}
 					}
 				}
 			}
 			println(); println();
-			print("1:runnum, 2:evnum, 3:helicity, 4:e_p, 5:e_theta, 6:p_p, 7:p_theta, ");
-			print("8:Q2, 9:W, 10:Mx, 11: Mx2, 12:x, 13:y, 14:z, ");
-			print("15:xF, ");
-			print("16:pT, 17:zeta ");
-			print("18:eta, ");
-			print("19:phi, "); // this is the trento phi of the Hadron
-			print("20: vz_e, 21: vz_p, 22: p_phi(lab), 23: e_phi(lab) \n");
+			print("1:runnum, 2:evnum, 3:helicity, ");
+			print("4:e_p, 5:e_theta, 6:e_phi, 7:vz_e, ")
+			print("8:p_p, 9:p_theta, 10:p_phi, 11:vz_p, ");
+			print("12:Q2, 13:W, 14:Mx, 15: Mx2, 16:x, 17:y, 18:z, ");
+			print("19:xF, ");
+			print("20:pT, 21:zeta ");
+			print("22:eta, ");
+			print("23:phi, "); // this is the trento phi of the Hadron
+			print("24:RICH_pid, 25:RQ_prob, 26:pi_prob, 27:k_prob, 28:pr_prob");
+			print("29:chi2pid");
+			print("\n");
 
 			println(); println();
 			println("Set p1 PID = "+p1_Str+"\n");
