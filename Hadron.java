@@ -57,7 +57,7 @@ public class Hadron {
     protected double p_Breit_pz, p_gN_pz;
     
     protected int RICH_pid;
-    protected double chi2pid, RQ_prob, el_prob, pi_prob, k_prob, pr_prob;
+    protected double chi2pid, beta, RQ_prob, el_prob, pi_prob, k_prob, pr_prob;
     
     public static boolean channel_test(Hadron variables) {
 //        if (variables.helicity==0){ 
@@ -177,6 +177,7 @@ public class Hadron {
             phi = Math.toRadians(phi);
             if ( Math.abs((180/Math.PI)*(theta-p_theta))<2 &&
                     Math.abs((180/Math.PI)*(phi-p_phi))<6) {
+                beta = rec_Bank.getFloat("beta", current_Part);
                 chi2pid = rec_Bank.getFloat("chi2pid", current_Part);
             }
         }
@@ -410,6 +411,8 @@ public class Hadron {
     public int RICH_pid() { return RICH_pid; } // returns PID assigned by the RICH
     
     public double chi2pid() { return Double.valueOf(Math.round(chi2pid*100000))/100000; }// returns chi2pid of hadron
+    
+    public double beta() { return Double.valueOf(Math.round(beta*100000))/100000; }// returns beta of hadron
     
     public double RQ_prob() { return Double.valueOf(Math.round(RQ_prob*100000))/100000; }// returns RQ_prob
     
