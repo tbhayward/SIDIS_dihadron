@@ -165,9 +165,24 @@ public class Hadron {
         p_phi = hadron.phi();
         if (p_phi < 0) { p_phi = 2*Math.PI + p_phi; }
         
+        chi2pid = 100;
+        for (int current_Part = 0; current_Part < rec_Bank.rows(); current_Part++) {
+            float px = rec_Bank.getFloat("px", current_Part);
+            float py = rec_Bank.getFloat("py", current_Part);
+            float pz = rec_Bank.getFloat("pz", current_Part);
+            double p = Math.sqrt(Math.pow(px,2)+Math.pow(py,2)+Math.pow(pz,2));
+            double theta = Math.acos(pz/p);
+            double phi = Math.toDegrees(Math.atan2(px,py));
+            phi = phi - 90; if (phi < 0) { phi = 360 + phi; } phi = 360 - phi;
+            phi = Math.toRadians(phi);
+            if ( Math.abs((180/Math.PI)*(theta-p_theta))<2 &&
+                    Math.abs((180/Math.PI)*(phi-p_phi))<6) {
+                chi2pid = rec_Bank.getFloat("chi2pid", current_Part);
+            }
+        }
         
-        // hadron matching from REC::Particle to RICH::hadCher track
-        chi2pid = 100; 
+        
+        // hadron matching from REC::Particle to RICH::hadCher track 
         RICH_pid = -1;
         RQ_prob = -1; el_prob = -1; pi_prob = -1; k_prob = -1; pr_prob = -1;
         if (event.hasBank("RICH::hadCher") ) {
@@ -175,7 +190,7 @@ public class Hadron {
             if (rich_Bank.rows() > 1) { } else { // not validated for more than one track
                 int pindex = rich_Bank.getInt("pindex", 0);
                 
-                chi2pid = rec_Bank.getFloat("chi2pid", pindex);
+//                chi2pid = rec_Bank.getFloat("chi2pid", pindex);
                 
                 float px = rec_Bank.getFloat("px", pindex);
                 float py = rec_Bank.getFloat("py", pindex);
